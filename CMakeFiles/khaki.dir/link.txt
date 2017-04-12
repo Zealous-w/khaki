@@ -1,0 +1,2 @@
+/usr/bin/ar cr libkhaki.a  CMakeFiles/khaki.dir/EventLoop.o CMakeFiles/khaki.dir/channel.o CMakeFiles/khaki.dir/time_wheel.o CMakeFiles/khaki.dir/net.o CMakeFiles/khaki.dir/util.o CMakeFiles/khaki.dir/poll.o
+/usr/bin/ranlib libkhaki.a

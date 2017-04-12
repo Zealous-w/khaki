@@ -1,0 +1,15 @@
+FILE(REMOVE_RECURSE
+  "CMakeFiles/khaki.dir/EventLoop.o"
+  "CMakeFiles/khaki.dir/channel.o"
+  "CMakeFiles/khaki.dir/time_wheel.o"
+  "CMakeFiles/khaki.dir/net.o"
+  "CMakeFiles/khaki.dir/util.o"
+  "CMakeFiles/khaki.dir/poll.o"
+  "libkhaki.pdb"
+  "libkhaki.a"
+)
+
+# Per-language clean rules from dependency scanning.
+FOREACH(lang CXX)
+  INCLUDE(CMakeFiles/khaki.dir/cmake_clean_${lang}.cmake OPTIONAL)
+ENDFOREACH(lang)

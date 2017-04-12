@@ -1,0 +1,2 @@
+CMakeLists.txt not found in Z:\item\khaki
+Cannot load CMake project: MinGW not found at: E:\MinGW
