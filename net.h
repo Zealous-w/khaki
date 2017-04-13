@@ -1,6 +1,7 @@
 #ifndef KHAKI_NET_H
 #define KHAKI_NET_H
 
+#include "buffer.h"
 #include "EventLoop.h"
 #include "channel.h"
 #include "log.h"
@@ -8,6 +9,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <memory>
+#include <mutex>
 
 namespace khaki {
 
@@ -33,9 +35,10 @@ namespace khaki {
 	};
 
 	////////////////////////////////////
+	class TcpServer;
 	class TcpClient : public std::enable_shared_from_this<TcpClient> {
 	public:
-		TcpClient( EventLoop* loop );
+		TcpClient( EventLoop* loop, TcpServer* server, std::shared_ptr<TimeWheel>& sp );
 		~TcpClient();
 
 		void handleRead(const TcpClientPtr& con) ;
@@ -49,16 +52,24 @@ namespace khaki {
 		void registerChannel(int fd);
 		void closeClient();
 		int getFd();
+		int getLastTime();
+		void updateTimeWheel();
+
 	private:
 		EventLoop* loop_;
-		Channel* channel_;
+		TcpServer* server_;
+		std::shared_ptr<Channel> channel_;
+		std::weak_ptr<TimeWheel> time_wheel_;
 		Callback readcb_, writecb_;
 		char buf[1024];
-		
+
+		int last_read_time_;
+
+		Buffer readBuf_, writeBuf_;
 	};
 
 	////////////////////////////////////
-	class TcpServer {
+	class TcpServer : public noncopyable {
 	public:
 		
 		TcpServer( EventLoop* loop, std::string host, int port );
@@ -71,17 +82,24 @@ namespace khaki {
 		void handlerWrite(const Callback& cb) { writecb_ = cb; }
 
 		void send(char* buf);
+
+		int getOnlineNum();
+		void addClient(std::shared_ptr<TcpClient>& sp);
+		void delClient(int fd);
 	private:
+		void newConnect( int fd, IpAddr& addr );
+		void handleAccept();
+		void handleTimeWheel();
+
 		EventLoop* loop_;
 		Channel* listen_;
 		Channel* time_wheel_;
 
 		IpAddr addr_;
 		Callback readcb_, writecb_, newcb_;
-		TimeWheel* time_wheel;
-		void newConnect( int fd, IpAddr& addr );
-		void handleAccept();
-		void handleTimeWheel();
+		std::shared_ptr<TimeWheel> time_wheel;
+		std::mutex mtx_;
+		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 
 	};
 }
 

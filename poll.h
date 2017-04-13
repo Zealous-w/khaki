@@ -24,8 +24,6 @@ namespace khaki{
         virtual void addChannel( Channel* ch ) = 0;
     	virtual void updateChannel( Channel* ch ) = 0;
     	virtual void removeChannel( Channel* ch ) = 0;
-
-    private:
     };
 
 

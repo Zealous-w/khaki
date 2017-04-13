@@ -1,9 +1,10 @@
 FILE(REMOVE_RECURSE
-  "CMakeFiles/khaki.dir/EventLoop.o"
-  "CMakeFiles/khaki.dir/channel.o"
+  "CMakeFiles/khaki.dir/buffer.o"
   "CMakeFiles/khaki.dir/time_wheel.o"
-  "CMakeFiles/khaki.dir/net.o"
   "CMakeFiles/khaki.dir/util.o"
+  "CMakeFiles/khaki.dir/channel.o"
+  "CMakeFiles/khaki.dir/EventLoop.o"
+  "CMakeFiles/khaki.dir/net.o"
   "CMakeFiles/khaki.dir/poll.o"
   "libkhaki.pdb"
   "libkhaki.a"

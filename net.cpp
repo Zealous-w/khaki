@@ -38,17 +38,15 @@ namespace khaki {
 
 	//////////////////////////////////////
 
-	TcpClient::TcpClient( EventLoop* loop ) :
-		loop_(loop), 
-		channel_(NULL)
+	TcpClient::TcpClient( EventLoop* loop, TcpServer* server, std::shared_ptr<TimeWheel>& sp ) :
+		loop_(loop), server_(server), time_wheel_(sp)
 	{
-
+		klog_info("TcpClient");
 	}
 
 	TcpClient::~TcpClient()
 	{
 		klog_info("~TcpClient");
-		delete channel_;
 	}
 
 	void TcpClient::handleRead(const TcpClientPtr& con)
@@ -58,18 +56,31 @@ namespace khaki {
 		int n = read(channel_->fd(), buf, 1024);
 		klog_info("TcpClient::readcb_");
 
+		last_read_time_ = util::getTime();
+		updateTimeWheel();
 		if ( n == 0 ) { closeClient(); return; }
 		if ( readcb_ ) readcb_(con);
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
 	{
-
+		
 	}
 
 	int TcpClient::getFd()
 	{
 		return channel_->fd();
+	}
+
+	int TcpClient::getLastTime()
+	{
+		return last_read_time_;
+	}
+
+	void TcpClient::updateTimeWheel()
+	{
+		TcpClientPtr conPtr = shared_from_this();
+		if ( !time_wheel_.expired() ) time_wheel_.lock()->addTcpClient(conPtr);
 	}
 
 	void TcpClient::send(char* buf)
@@ -79,7 +90,8 @@ namespace khaki {
 
 	void TcpClient::registerChannel( int fd )
 	{
-		channel_ = new Channel(loop_, fd, kReadEv);
+		channel_ = std::shared_ptr<Channel>(new Channel(loop_, fd, kReadEv));
+
 		TcpClientPtr conPtr = shared_from_this();
 		conPtr->channel_->OnRead([=](){conPtr->handleRead(conPtr);});
 		conPtr->channel_->OnWrite([=](){conPtr->handleWrite(conPtr);});
@@ -90,10 +102,7 @@ namespace khaki {
 		readcb_ = NULL;
 		writecb_ = NULL;
 
-		// TODO 
-		Channel* ch = channel_;
-	    channel_ = NULL;
-		delete ch;
+		channel_.reset();
 	}
 
 	//////////////////////////////////////
@@ -101,7 +110,7 @@ namespace khaki {
 		loop_(loop), 
 		listen_(NULL), 
 		addr_(host, port), 
-		time_wheel(new TimeWheel(1 << 6))
+		time_wheel(new TimeWheel(10))
 	{
 		time_wheel_ = new Channel(loop, time_wheel->getTimeFd(), kReadEv);
 		time_wheel_->OnRead([this]{ handleTimeWheel(); });
@@ -110,7 +119,6 @@ namespace khaki {
 	TcpServer::~TcpServer()
 	{
 		delete listen_;
-		delete time_wheel;
 	}
 
 	void TcpServer::start()
@@ -119,14 +127,17 @@ namespace khaki {
 		int ret = bind(fd_, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
 		if (ret == -1)
 		{
-			klog_info("TcpServer Bind Error");
+			klog_info("TcpServer Bind Error, please wait a minutes");
 			close(fd_);
+			loop_->setStatus(false);
 			return;
 		}
 
 		if (listen(fd_, 5) == -1 )
 		{
+			klog_info("TcpServer Listen Error");
 			close(fd_);
+			loop_->setStatus(false);
 			return;
 		}
 
@@ -141,9 +152,35 @@ namespace khaki {
 
 	}
 
+	int TcpServer::getOnlineNum()
+	{
+		int count = 0;
+
+		mtx_.lock();
+		count = sSessionList.size();
+		mtx_.unlock();
+
+		return count;
+	}
+
+	void TcpServer::addClient(std::shared_ptr<TcpClient>& sp)
+	{
+		mtx_.lock();
+		sSessionList.insert( std::make_pair(sp->getFd(), std::weak_ptr<TcpClient>(sp)) );
+		mtx_.unlock();
+	}
+
+	void TcpServer::delClient(int fd)
+	{
+		mtx_.lock();
+		auto sc = sSessionList.find(fd);
+		if ( sc != sSessionList.end() ) sSessionList.erase(fd);
+		mtx_.unlock();
+	}
+
 	void TcpServer::newConnect( int fd, IpAddr& addr )
 	{
-		TcpClientPtr conPtr( new TcpClient(loop_));
+		TcpClientPtr conPtr( new TcpClient(loop_, this, time_wheel));
 		conPtr->setReadCallback(readcb_);
 		conPtr->registerChannel(fd);
 
@@ -160,7 +197,6 @@ namespace khaki {
 		{
 			IpAddr cAddr(caddr);
 			newConnect( connfd, cAddr );
-			klog_info("handleAccept");
 		}
 	}
 

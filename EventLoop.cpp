@@ -5,12 +5,17 @@ namespace khaki{
 	EventLoop::EventLoop() :
 		poll_(new PollEpoll())
 	{
-		byRunning_ = false;
+		byRunning_ = true;
 	}
 
 	EventLoop::~EventLoop()
 	{
 		delete poll_;
+	}
+
+	void EventLoop::setStatus(bool status)
+	{
+		byRunning_ = status;
 	}
 
 	PollEpoll* EventLoop::getPoll()
@@ -20,7 +25,7 @@ namespace khaki{
 
 	void EventLoop::loop()
 	{
-		while(!byRunning_)
+		while(byRunning_)
 		{
 			poll_->poll();
 		}

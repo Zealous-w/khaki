@@ -18,6 +18,7 @@ namespace khaki{
 
         void loop();
         
+        void setStatus(bool status);
         virtual EventLoop* getNextLoop() { return this; }
     private:
         bool byRunning_;

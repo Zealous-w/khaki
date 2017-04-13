@@ -1,6 +1,8 @@
 #ifndef KHAKI_BUFFER_H
 #define KHAKI_BUFFER_H
 
+#include <string>
+
 namespace khaki{
 
 	class Buffer {

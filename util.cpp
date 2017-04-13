@@ -1,6 +1,7 @@
 #include "util.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 namespace khaki
 {
@@ -46,4 +47,12 @@ std::string util::string_format( const std::string fmt, ... )
     }
     return str;
 }
+
+int util::getTime()
+{
+    struct timeval tm;
+    gettimeofday(&tm, NULL);
+    return tm.tv_sec;
+}
+
 }

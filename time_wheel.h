@@ -24,6 +24,7 @@ namespace khaki {
 		int getTimeFd();
 		void addTcpClient(const TcpClientPtr& con);
 		void handlerRead();
+		void showTimeWheel();
 	private:
 		std::vector<std::unordered_map<int, TcpWeakPtr>> vWheel_;
 		int timefd_;

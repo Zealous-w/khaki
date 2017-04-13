@@ -6,13 +6,18 @@ CMakeFiles/khaki.dir/EventLoop.o: EventLoop.h
 CMakeFiles/khaki.dir/EventLoop.o: poll.h
 CMakeFiles/khaki.dir/EventLoop.o: util.h
 
+CMakeFiles/khaki.dir/buffer.o: buffer.cpp
+CMakeFiles/khaki.dir/buffer.o: buffer.h
+
 CMakeFiles/khaki.dir/channel.o: EventLoop.h
 CMakeFiles/khaki.dir/channel.o: channel.cpp
 CMakeFiles/khaki.dir/channel.o: channel.h
+CMakeFiles/khaki.dir/channel.o: log.h
 CMakeFiles/khaki.dir/channel.o: poll.h
 CMakeFiles/khaki.dir/channel.o: util.h
 
 CMakeFiles/khaki.dir/net.o: EventLoop.h
+CMakeFiles/khaki.dir/net.o: buffer.h
 CMakeFiles/khaki.dir/net.o: channel.h
 CMakeFiles/khaki.dir/net.o: log.h
 CMakeFiles/khaki.dir/net.o: net.cpp
@@ -29,6 +34,7 @@ CMakeFiles/khaki.dir/poll.o: poll.h
 CMakeFiles/khaki.dir/poll.o: util.h
 
 CMakeFiles/khaki.dir/time_wheel.o: EventLoop.h
+CMakeFiles/khaki.dir/time_wheel.o: buffer.h
 CMakeFiles/khaki.dir/time_wheel.o: channel.h
 CMakeFiles/khaki.dir/time_wheel.o: log.h
 CMakeFiles/khaki.dir/time_wheel.o: net.h
