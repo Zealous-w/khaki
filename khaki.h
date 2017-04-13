@@ -11,5 +11,6 @@
 #include "EventLoop.h"
 #include "net.h"
 #include "util.h"
+#include "log.h"
 
 #endif //KHAKI_KHAKI_H

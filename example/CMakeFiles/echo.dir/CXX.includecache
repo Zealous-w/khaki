@@ -39,6 +39,8 @@ net.h
 /home/khaki/item/khaki/net.h
 util.h
 /home/khaki/item/khaki/util.h
+log.h
+/home/khaki/item/khaki/log.h
 
 /home/khaki/item/khaki/log.h
 string

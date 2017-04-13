@@ -41,20 +41,23 @@ namespace khaki {
 		void TimeWheel::showTimeWheel()
 		{
 			int index = 0;
+			std::string str;
+			str += "\n   ----------------\n";
 			for ( auto vMp : vWheel_ )
 			{
-				if ( index == index_ ) std::cout << "==>";
-				else	std::cout << "   ";
+				if ( index == index_ ) str += "==>";
+				else str += "   ";
 
-				std::cout << "[" << index << "] : ";
+				str = util::string_format("%s[%d] : ", str.c_str(), index );
 				for ( auto mIn : vMp )
 				{
-					std::cout << "->*";
+					str += "->*";
 				}
-				std::cout << std::endl;
+				str += "\n";
 				index++;
 			}
-			std::cout << "   ==============" << std::endl;
+			str +="   ----------------\n";
+			klog_debg(str.c_str());
 		}
 
 		void TimeWheel::handlerRead()
@@ -62,7 +65,7 @@ namespace khaki {
 			uint64_t exp; 
 			read(timefd_, &exp, sizeof(uint64_t) );
 
-			//showTimeWheel();
+			showTimeWheel();
 			int now = util::getTime();
 			for ( auto wp : vWheel_[index_] )
 			{	

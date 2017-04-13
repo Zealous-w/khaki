@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <map>
 
+namespace khaki {
 class Log : public khaki::noncopyable {
 public:
 	typedef std::map<int, std::string> MapLogLevelStr;
@@ -79,7 +80,7 @@ public:
 		va_start(args, fmt);
 		begin += vsnprintf(begin, end-begin, fmt, args);
 		va_end(args);
-		printf("%s\n", buffer);
+		if ( level_ <= level ) printf("%s\n", buffer);
 	}	
 private:
 	int level_;
@@ -91,7 +92,7 @@ private:
 		Log::getLog().print(level, __LINE__, __FILE__, __func__, __VA_ARGS__);\
 	}while(0)
 
-#define klog_debug(...) \
+#define klog_debg(...) \
 		klog(Log::LogLevel::E_LOG_DEBUG, __VA_ARGS__)
 #define klog_info(...) \
 		klog(Log::LogLevel::E_LOG_INFO, __VA_ARGS__)
@@ -102,4 +103,5 @@ private:
 #define klog_fatal(...) \
 		klog(Log::LogLevel::E_LOG_FATAL, __VA_ARGS__)
 
+}
 #endif //KHAKI_LOG_H
