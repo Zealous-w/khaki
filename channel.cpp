@@ -3,7 +3,7 @@
 
 namespace khaki {
 	Channel::Channel(EventLoop* loop, int fd, int event):
-    	loop_(loop), fd_(fd), events(event)
+    		loop_(loop), fd_(fd), events(event)
 	{
 		klog_info("Channel : %d", fd_);
 	    loop_->getPoll()->addChannel(this);
