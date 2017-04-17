@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <fcntl.h>
 
 namespace khaki
 {
@@ -23,6 +24,10 @@ public:
 	static std::string string_format( const std::string fmt_str, ... );
 
 	static int getTime();
+
+    static int setNonBlock(int fd, bool value=true);
+    
+    static int setReuseAddr(int fd, bool value=true);
 };
 }
 

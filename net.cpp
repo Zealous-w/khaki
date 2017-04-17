@@ -1,6 +1,8 @@
 #include "net.h"
+#include "EventLoop.h"
+#include "EventLoopThread.h"
+#include "channel.h"
 #include "time_wheel.h"
-#include "log.h"
 
 namespace khaki {
 
@@ -38,38 +40,73 @@ namespace khaki {
 
 	//////////////////////////////////////
 
-	TcpClient::TcpClient( EventLoop* loop, TcpServer* server, std::shared_ptr<TimeWheel>& sp ) :
-		loop_(loop), server_(server), time_wheel_(sp)
+	TcpClient::TcpClient( EventLoop* loop, TcpServer* server ) :
+		loop_(loop), server_(server)
 	{
-		klog_info("TcpClient");
+		//klog_info("TcpClient");
 	}
 
 	TcpClient::~TcpClient()
 	{
-		klog_info("~TcpClient");
+		//klog_info("~TcpClient");
 	}
 
 	void TcpClient::handleRead(const TcpClientPtr& con)
 	{
 		char buf[20480] = {0};
 		int n = 0;
-		while ( ( n = read(channel_->fd(), buf, 20480 )) > 0 )
+		while ( true )
 		{
-			buf_.append(buf, n);
-			//klog_info("TcpClient::handleRead size : %d, buff : %s", n, buf_.show().c_str());
-
-			last_read_time_ = util::getTime();
-			updateTimeWheel();
-			if ( readcb_ ) readcb_(con);
+			n = read(channel_->fd(), buf, 20480 );
+			if ( n < 0 && errno == EINTR )
+			{
+				//klog_info("read continue by EAGAIN"); continue;
+			} else if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) )
+			{
+				//klog_info("TcpClient::handleRead size : %d, buff : %s", n, buf_.show().c_str());
+				if ( readcb_ ) readcb_(con); break;
+			} else if ( channel_->fd() == -1 || n == 0 || n == -1 )	
+			{
+				//klog_info("read close by reset");
+				closeClient(con); break;
+			} else 
+			{
+				readBuf_.append(buf, n);
+				last_read_time_ = util::getTime();
+				updateTimeWheel();
+			}
 		}
-		
-		if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) ) return;
-		if ( n == 0 ) { closeClient(); return; }
+		//klog_info("********read end return");
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
 	{
-		
+		int size = directWrite(writeBuf_.begin(), writeBuf_.size());
+		writeBuf_.addBegin(size);
+		klog_info("****** trigger EPOLL_OUT");
+	}
+
+	int TcpClient::directWrite(const char* buf, int len)
+	{
+		int writeSize = len;
+		int sendSize = 0;
+		int ret = 0;
+		while ( writeSize > sendSize )
+		{
+			ret = write(channel_->fd(), buf, len - sendSize );
+			if (ret > 0) {
+				sendSize += ret;
+				
+				continue;
+			} else if (ret == -1 && errno == EINTR) {
+				continue;
+			} else if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				break;
+			} else {
+				klog_info("write error client closed");
+				break;
+			}
+		}
 	}
 
 	int TcpClient::getFd()
@@ -85,7 +122,7 @@ namespace khaki {
 	void TcpClient::updateTimeWheel()
 	{
 		TcpClientPtr conPtr = shared_from_this();
-		if ( !time_wheel_.expired() ) time_wheel_.lock()->addTcpClient(conPtr);
+		loop_->getTimeWheelPtr()->addTcpClient(conPtr);
 	}
 
 	void TcpClient::send(char* buff, int len)
@@ -95,8 +132,17 @@ namespace khaki {
 
 	void TcpClient::send(Buffer& buf)
 	{
-		write(channel_->fd(), buf_.begin(), buf_.size());
-		buf.addBegin(buf.size());
+		//write(channel_->fd(), buf.begin(), buf.size());
+		if ( buf.size() )
+		{
+			int size = directWrite(buf.begin(), buf.size());
+			buf.addBegin(size);
+		}
+		if ( buf.size() )
+		{
+			writeBuf_.append(buf.begin(), buf.size());
+			if (!channel_->writeStatus()) channel_->enableWrite(true);
+		}
 	}
 
 	void TcpClient::registerChannel( int fd )
@@ -106,10 +152,15 @@ namespace khaki {
 		TcpClientPtr conPtr = shared_from_this();
 		conPtr->channel_->OnRead([=](){conPtr->handleRead(conPtr);});
 		conPtr->channel_->OnWrite([=](){conPtr->handleWrite(conPtr);});
+
+		updateTimeWheel();
 	}
 
-	void TcpClient::closeClient()
+	void TcpClient::closeClient(const TcpClientPtr& con)
 	{
+		if (readcb_ && readBuf_.size()) {
+        	readcb_(con);
+    	}
 		readcb_ = NULL;
 		writecb_ = NULL;
 
@@ -120,11 +171,8 @@ namespace khaki {
 	TcpServer::TcpServer( EventLoop* loop, std::string host, int port ):
 		loop_(loop), 
 		listen_(NULL), 
-		addr_(host, port), 
-		time_wheel(new TimeWheel(60))
+		addr_(host, port)
 	{
-		time_wheel_ = new Channel(loop_, time_wheel->getTimeFd(), kReadEv);
-		time_wheel_->OnRead([this]{ handleTimeWheel(); });
 	}
 
 	TcpServer::~TcpServer()
@@ -135,6 +183,16 @@ namespace khaki {
 	void TcpServer::start()
 	{
 		int fd_ = socket(AF_INET, SOCK_STREAM, 0);
+		if ( util::setReuseAddr(fd_) == -1 )
+		{
+			klog_info("TcpServer Sockopt Error");
+			close(fd_);
+			loop_->setStatus(false);
+			return;
+		}
+
+		util::setNonBlock(fd_);
+
 		int ret = bind(fd_, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
 		if (ret == -1)
 		{
@@ -144,7 +202,7 @@ namespace khaki {
 			return;
 		}
 
-		if (listen(fd_, 5) == -1 )
+		if (listen(fd_, 20) == -1 )
 		{
 			klog_info("TcpServer Listen Error");
 			close(fd_);
@@ -191,28 +249,53 @@ namespace khaki {
 
 	void TcpServer::newConnect( int fd, IpAddr& addr )
 	{
-		TcpClientPtr conPtr( new TcpClient(getEventLoop(), this, time_wheel));
+		EventLoop* loop_c = getEventLoop();
+		util::setNonBlock(fd);
+		TcpClientPtr conPtr( new TcpClient(loop_c, this));
 		conPtr->setReadCallback(readcb_);
 		conPtr->registerChannel(fd);
-
-		time_wheel->addTcpClient(conPtr);
 	}
 
 	void TcpServer::handleAccept()
 	{
 		struct sockaddr_in caddr;
 		socklen_t csize = sizeof(struct sockaddr);
-
-		int connfd = accept(listen_->fd(), (struct sockaddr*)&caddr, &csize);
-		if ( connfd >= 0 )
+		int connfd = -1;
+		while ( ( connfd = accept(listen_->fd(), (struct sockaddr*)&caddr, &csize) ) != -1 ) 
 		{
 			IpAddr cAddr(caddr);
+			//klog_info("Accept a new connection %d", connfd);
 			newConnect( connfd, cAddr );
 		}
 	}
 
-	void TcpServer::handleTimeWheel()
-	{
-		time_wheel->handlerRead();
-	}
+	/////////////////////////////////////////
+	TcpThreadServer::TcpThreadServer( EventLoop* loop, std::string host, int port ) :
+			index_(0),
+			TcpServer(loop, host, port), 
+			threadNum(std::thread::hardware_concurrency())
+		{
+			klog_info("threadNum : %d", threadNum);
+			for ( int i = 0; i < threadNum; i++ ) {
+				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
+			}
+
+			for ( auto v : vThreadLoop_ ) {
+				v->startLoop();
+			}
+
+			threadSize = vThreadLoop_.size();
+		}
+
+		TcpThreadServer::~TcpThreadServer()
+		{
+		}
+
+		EventLoop* TcpThreadServer::getEventLoop() 
+		{
+			index_++;
+			if ( index_  >= threadSize ) index_ = 0;
+			//klog_info("getEventLoop() index_ : %d Sum : %d", index_, threadSize);
+			return vThreadLoop_[index_]->getLoop();
+		}  
 }

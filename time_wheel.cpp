@@ -73,7 +73,7 @@ namespace khaki {
 				{
 					TcpClientPtr con = wp.second.lock();
 					klog_info("time wheel, lasttime = %d, size = %d, now=%d", con->getLastTime(), size_, now);
-					if (con->getLastTime() + size_ - 1 <= now) con->closeClient();
+					if (con->getLastTime() + size_ - 1 <= now) con->closeClient(con);
 				} 
 			}
 

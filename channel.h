@@ -1,10 +1,10 @@
 #ifndef KHAKI_CHANNEL_H
 #define KHAKI_CHANNEL_H
+
 #include "poll.h"
-#include "EventLoop.h"
 
 namespace khaki{
-
+    class EventLoop;
     class Channel : public noncopyable {
     public:
         typedef std::function<void()> FunctionCallback_;
@@ -19,15 +19,18 @@ namespace khaki{
         void OnRead(const FunctionCallback_& readcb);
         void OnWrite(const FunctionCallback_& writecb);
 
-        void enableRead();
-        void enableWrite();
+        bool readStatus();
+        bool writeStatus();
+
+        void enableRead(bool enable);
+        void enableWrite(bool enable);
 
         void handleRead();
         void handleWrite();
     private:
         EventLoop* loop_;
         PollBase*  poll_;
-        int events;
+        int events_;
         int fd_;
 
         FunctionCallback_ readcb_, writecb_;

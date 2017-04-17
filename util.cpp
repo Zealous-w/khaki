@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include<sys/socket.h>
 
 namespace khaki
 {
@@ -54,5 +55,23 @@ int util::getTime()
     gettimeofday(&tm, NULL);
     return tm.tv_sec;
 }
+
+int util::setNonBlock(int fd, bool value) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags < 0) {
+        return errno;
+    }
+    if (value) {
+        return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    }
+    return fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+}
+
+int util::setReuseAddr(int fd, bool value) {
+    int flag = value;
+    int len = sizeof flag;
+    return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, len);
+}
+
 
 }

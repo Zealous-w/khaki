@@ -9,7 +9,6 @@ int main( int argc, char* argv[] )
 	khaki::Log::getLog().setLogLevel(khaki::Log::LogLevel::E_LOG_INFO);
 	
 	server.handlerRead([](const khaki::TcpClientPtr& con){
-		//std::cout << "buf : " << con->getBuf() << std::endl;
 		con->send(con->getBuf());
 	});
 

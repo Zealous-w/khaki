@@ -3,23 +3,36 @@
 
 CMakeFiles/khaki.dir/EventLoop.o: EventLoop.cpp
 CMakeFiles/khaki.dir/EventLoop.o: EventLoop.h
+CMakeFiles/khaki.dir/EventLoop.o: buffer.h
+CMakeFiles/khaki.dir/EventLoop.o: channel.h
+CMakeFiles/khaki.dir/EventLoop.o: log.h
+CMakeFiles/khaki.dir/EventLoop.o: net.h
 CMakeFiles/khaki.dir/EventLoop.o: poll.h
+CMakeFiles/khaki.dir/EventLoop.o: time_wheel.h
 CMakeFiles/khaki.dir/EventLoop.o: util.h
 
 CMakeFiles/khaki.dir/EventLoopThread.o: EventLoop.h
 CMakeFiles/khaki.dir/EventLoopThread.o: EventLoopThread.cpp
 CMakeFiles/khaki.dir/EventLoopThread.o: EventLoopThread.h
+CMakeFiles/khaki.dir/EventLoopThread.o: buffer.h
+CMakeFiles/khaki.dir/EventLoopThread.o: log.h
+CMakeFiles/khaki.dir/EventLoopThread.o: net.h
 CMakeFiles/khaki.dir/EventLoopThread.o: poll.h
+CMakeFiles/khaki.dir/EventLoopThread.o: time_wheel.h
 CMakeFiles/khaki.dir/EventLoopThread.o: util.h
 
 CMakeFiles/khaki.dir/buffer.o: buffer.cpp
 CMakeFiles/khaki.dir/buffer.o: buffer.h
+CMakeFiles/khaki.dir/buffer.o: util.h
 
 CMakeFiles/khaki.dir/channel.o: EventLoop.h
+CMakeFiles/khaki.dir/channel.o: buffer.h
 CMakeFiles/khaki.dir/channel.o: channel.cpp
 CMakeFiles/khaki.dir/channel.o: channel.h
 CMakeFiles/khaki.dir/channel.o: log.h
+CMakeFiles/khaki.dir/channel.o: net.h
 CMakeFiles/khaki.dir/channel.o: poll.h
+CMakeFiles/khaki.dir/channel.o: time_wheel.h
 CMakeFiles/khaki.dir/channel.o: util.h
 
 CMakeFiles/khaki.dir/net.o: EventLoop.h
@@ -34,19 +47,18 @@ CMakeFiles/khaki.dir/net.o: time_wheel.h
 CMakeFiles/khaki.dir/net.o: util.h
 
 CMakeFiles/khaki.dir/poll.o: EventLoop.h
+CMakeFiles/khaki.dir/poll.o: buffer.h
 CMakeFiles/khaki.dir/poll.o: channel.h
 CMakeFiles/khaki.dir/poll.o: log.h
+CMakeFiles/khaki.dir/poll.o: net.h
 CMakeFiles/khaki.dir/poll.o: poll.cpp
 CMakeFiles/khaki.dir/poll.o: poll.h
+CMakeFiles/khaki.dir/poll.o: time_wheel.h
 CMakeFiles/khaki.dir/poll.o: util.h
 
-CMakeFiles/khaki.dir/time_wheel.o: EventLoop.h
-CMakeFiles/khaki.dir/time_wheel.o: EventLoopThread.h
 CMakeFiles/khaki.dir/time_wheel.o: buffer.h
-CMakeFiles/khaki.dir/time_wheel.o: channel.h
 CMakeFiles/khaki.dir/time_wheel.o: log.h
 CMakeFiles/khaki.dir/time_wheel.o: net.h
-CMakeFiles/khaki.dir/time_wheel.o: poll.h
 CMakeFiles/khaki.dir/time_wheel.o: time_wheel.cpp
 CMakeFiles/khaki.dir/time_wheel.o: time_wheel.h
 CMakeFiles/khaki.dir/time_wheel.o: util.h

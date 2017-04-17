@@ -1,6 +1,8 @@
 #ifndef KHAKI_LOG_H
 #define KHAKI_LOG_H
 
+#include "util.h"
+
 #include <string>
 #include <stdio.h>
 #include <sys/time.h>

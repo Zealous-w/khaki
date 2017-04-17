@@ -24,7 +24,7 @@ namespace khaki {
     {
         std::unique_lock<std::mutex> lck(mtx_);
         loop_ = new EventLoop();
-        cond_.notify_all();
+        cond_.notify_one();
     }
 
     void EventLoopThread::run()
@@ -33,6 +33,8 @@ namespace khaki {
             std::unique_lock<std::mutex> lck(mtx_);
             while ( loop_ == NULL ) cond_.wait(lck);
         }
+
+        //klog_info("Thread %x", loop_);
 
         loop_->loop();
     }

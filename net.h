@@ -2,9 +2,6 @@
 #define KHAKI_NET_H
 
 #include "buffer.h"
-#include "EventLoop.h"
-#include "EventLoopThread.h"
-#include "channel.h"
 #include "log.h"
 
 #include <arpa/inet.h>
@@ -14,9 +11,12 @@
 #include <thread>
 
 namespace khaki {
-
+	class EventLoop;
 	class TcpClient;
 	class TimeWheel;
+	class Channel;
+
+	typedef std::weak_ptr<TcpClient> TcpWeakPtr;
 	typedef std::shared_ptr<TcpClient> TcpClientPtr;
 	typedef std::function<void(const TcpClientPtr& con)> Callback;
 
@@ -40,7 +40,7 @@ namespace khaki {
 	class TcpServer;
 	class TcpClient : public std::enable_shared_from_this<TcpClient> {
 	public:
-		TcpClient( EventLoop* loop, TcpServer* server, std::shared_ptr<TimeWheel>& sp );
+		TcpClient( EventLoop* loop, TcpServer* server );
 		~TcpClient();
 
 		void handleRead(const TcpClientPtr& con) ;
@@ -51,20 +51,19 @@ namespace khaki {
 
 		void send(char* buf, int len);
 		void send(Buffer& buf);
-		Buffer& getBuf() { return buf_; }
+		Buffer& getBuf() { return readBuf_; }
 		void registerChannel(int fd);
-		void closeClient();
+		void closeClient(const TcpClientPtr& con);
 		int getFd();
 		int getLastTime();
 		void updateTimeWheel();
 
 	private:
+		int directWrite(const char* buf, int len);
 		EventLoop* loop_;
 		TcpServer* server_;
 		std::shared_ptr<Channel> channel_;
-		std::weak_ptr<TimeWheel> time_wheel_;
 		Callback readcb_, writecb_;
-		Buffer buf_;
 
 		int last_read_time_;
 
@@ -92,52 +91,25 @@ namespace khaki {
 	private:
 		void newConnect( int fd, IpAddr& addr );
 		void handleAccept();
-		void handleTimeWheel();
 
 		EventLoop* loop_;
 		Channel* listen_;
-		Channel* time_wheel_;
-
 		IpAddr addr_;
 		Callback readcb_, writecb_, newcb_;
-		std::shared_ptr<TimeWheel> time_wheel;
 		std::mutex mtx_;
 		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 
 	};
 
 	////////////////////////////////////
+	class EventLoopThread;
 	class TcpThreadServer : public TcpServer {
 	public:
 		typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
 		
-		TcpThreadServer( EventLoop* loop, std::string host, int port ) :
-			index_(0),
-			TcpServer(loop, host, port), 
-			threadNum(std::thread::hardware_concurrency())
-		{
-			klog_info("threadNum : %d", threadNum);
-			for ( int i = 0; i < threadNum; i++ ) {
-				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
-			}
+		TcpThreadServer( EventLoop* loop, std::string host, int port );
 
-			for ( auto v : vThreadLoop_ ) {
-				v->startLoop();
-			}
-
-			threadSize = vThreadLoop_.size();
-		}
-
-		~TcpThreadServer()
-		{
-		}
-
-		virtual EventLoop* getEventLoop() 
-		{
-			index_++;
-			if ( index_  >= threadSize ) index_ = 0;
-			klog_info("getEventLoop() index_ : %d Sum : %d", index_, threadSize);
-			return vThreadLoop_[index_]->getLoop();
-		}  
+		~TcpThreadServer();
+		virtual EventLoop* getEventLoop();
 
 	private:
 		int index_;

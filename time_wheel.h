@@ -10,10 +10,9 @@
 #include <stdio.h>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace khaki {
-
-	typedef std::weak_ptr<TcpClient> TcpWeakPtr;
 
 	class TimeWheel {
 	public:

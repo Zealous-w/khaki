@@ -1,5 +1,6 @@
 #ifndef KHAKI_EVENTLOOPTHREAD_H
 #define KHAKI_EVENTLOOPTHREAD_H
+
 #include "EventLoop.h"
 #include <thread>
 #include <condition_variable>

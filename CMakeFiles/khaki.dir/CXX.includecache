@@ -9,13 +9,9 @@
 /home/khaki/item/khaki/EventLoop.h
 poll.h
 /home/khaki/item/khaki/poll.h
-
-/home/khaki/item/khaki/EventLoopThread.h
-EventLoop.h
-/home/khaki/item/khaki/EventLoop.h
-thread
--
-condition_variable
+time_wheel.h
+/home/khaki/item/khaki/time_wheel.h
+memory
 -
 
 /home/khaki/item/khaki/buffer.h
@@ -25,10 +21,10 @@ string
 /home/khaki/item/khaki/channel.h
 poll.h
 /home/khaki/item/khaki/poll.h
-EventLoop.h
-/home/khaki/item/khaki/EventLoop.h
 
 /home/khaki/item/khaki/log.h
+util.h
+/home/khaki/item/khaki/util.h
 string
 -
 stdio.h
@@ -60,23 +56,9 @@ syslog.h
 map
 -
 
-/home/khaki/item/khaki/net.cpp
-net.h
-/home/khaki/item/khaki/net.h
-time_wheel.h
-/home/khaki/item/khaki/time_wheel.h
-log.h
-/home/khaki/item/khaki/log.h
-
 /home/khaki/item/khaki/net.h
 buffer.h
 /home/khaki/item/khaki/buffer.h
-EventLoop.h
-/home/khaki/item/khaki/EventLoop.h
-EventLoopThread.h
-/home/khaki/item/khaki/EventLoopThread.h
-channel.h
-/home/khaki/item/khaki/channel.h
 log.h
 /home/khaki/item/khaki/log.h
 arpa/inet.h
@@ -89,6 +71,14 @@ mutex
 -
 thread
 -
+
+/home/khaki/item/khaki/poll.cpp
+poll.h
+/home/khaki/item/khaki/poll.h
+log.h
+/home/khaki/item/khaki/log.h
+channel.h
+/home/khaki/item/khaki/channel.h
 
 /home/khaki/item/khaki/poll.h
 EventLoop.h
@@ -125,6 +115,8 @@ vector
 -
 unordered_map
 -
+memory
+-
 
 /home/khaki/item/khaki/util.h
 memory
@@ -132,5 +124,7 @@ memory
 string
 -
 vector
+-
+fcntl.h
 -
 

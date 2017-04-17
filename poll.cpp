@@ -22,7 +22,7 @@ namespace khaki {
 		int ret = epoll_ctl( evId_, EPOLL_CTL_ADD, ch->fd(), &ev );
 		sChannel_.insert(ch);
 
-		klog_info("Add Channel");
+		//klog_info("Add Channel");
 	}
 
 	void PollEpoll::updateChannel(Channel* ch) 
