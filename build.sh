@@ -1,3 +1,3 @@
 #!/bin/bash
-
-make && cd example && make && ./echo
+make clean
+make && cd example && make clean && make && gdb echo

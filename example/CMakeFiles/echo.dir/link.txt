@@ -1,1 +1,1 @@
-/usr/bin/g++    -std=c++11    CMakeFiles/echo.dir/echo.cpp.o  -o echo -rdynamic /home/khaki/item/khaki/libkhaki.a 
+/usr/bin/g++    -std=c++11 -pthread    CMakeFiles/echo.dir/echo.cpp.o  -o echo -rdynamic /home/khaki/item/khaki/libkhaki.a 

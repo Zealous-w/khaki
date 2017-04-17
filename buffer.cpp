@@ -1,36 +1,79 @@
 #include "buffer.h"
+#include "util.h"
+#include <algorithm>
+#include <cstring>
+#include <iostream>
 
 namespace khaki{
 
-		Buffer::Buffer(){
+Buffer::Buffer() : buf_(NULL), begin_(0), end_(0), cap_(0), size_(0) {
 
-		}
-		Buffer::~Buffer(){
-			
-		}
+}
+Buffer::~Buffer() {
+	if (buf_) delete[] buf_;
+}
 
-		void Buffer::clear(){
-			
-		}
+void Buffer::clear() {
+	if (buf_) delete[] buf_;
+	buf_ = NULL;
+	size_ = 0;
+}
 
+bool Buffer::empty() const {
+	return (end_ - begin_ > 0) ? false : true;
+}
 
-		bool Buffer::empty() const{
-			
-		}
+int Buffer::size() const {
+	return end_ - begin_;
+}
 
-		int Buffer::size() const{
-		}
+char* Buffer::begin() const {
+	return buf_ + begin_;
+}
 
-		char* Buffer::begin() const{
-			
-		}
+char* Buffer::end() const {
+	return buf_ + end_;
+}
 
-		char* Buffer::end() const{
-			
-		}
+char* Buffer::data() const {
+	return buf_ + begin_;
+}
 
-		char* Buffer::data() const{
-			
-		}
+void Buffer::move()
+{
+	std::copy(begin(), end(), buf_);
+	end_ -= begin_;
+	begin_ = 0;
+}
 
+void Buffer::append(char* buf, int len)
+{
+	move();
+	if (end_ + len > cap_) alloc(end_ + len);
+	std::copy(buf, buf + len, end());
+	end_ += len;
+}
+
+void Buffer::alloc(int len)
+{
+	//std::cout << len << std::endl;
+	char* bufTemp = new char[2 * len];
+	memset(bufTemp, 0, 2 * len);
+	std::copy(begin(), end(), bufTemp);
+	delete[] buf_;
+	buf_ = bufTemp;
+	end_ -= begin_;
+	begin_ = 0;
+	cap_ = 2 * len;
+}
+
+void Buffer::addBegin(int len)
+{	
+	begin_ += len;
+}
+
+std::string Buffer::show()
+{
+	return util::string_format("[%d %d %d]", begin_, end_, cap_);
+}
 }

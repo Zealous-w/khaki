@@ -51,15 +51,20 @@ namespace khaki {
 
 	void TcpClient::handleRead(const TcpClientPtr& con)
 	{
-		klog_info("TcpClient::handleRead");
-		memset(buf, 0, 1024);
-		int n = read(channel_->fd(), buf, 1024);
-		klog_info("TcpClient::readcb_");
+		char buf[20480] = {0};
+		int n = 0;
+		while ( ( n = read(channel_->fd(), buf, 20480 )) > 0 )
+		{
+			buf_.append(buf, n);
+			//klog_info("TcpClient::handleRead size : %d, buff : %s", n, buf_.show().c_str());
 
-		last_read_time_ = util::getTime();
-		updateTimeWheel();
+			last_read_time_ = util::getTime();
+			updateTimeWheel();
+			if ( readcb_ ) readcb_(con);
+		}
+		
+		if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) ) return;
 		if ( n == 0 ) { closeClient(); return; }
-		if ( readcb_ ) readcb_(con);
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
@@ -83,9 +88,15 @@ namespace khaki {
 		if ( !time_wheel_.expired() ) time_wheel_.lock()->addTcpClient(conPtr);
 	}
 
-	void TcpClient::send(char* buf)
+	void TcpClient::send(char* buff, int len)
 	{
-		write(channel_->fd(), buf, strlen(buf));
+		write(channel_->fd(), buff, len);
+	}
+
+	void TcpClient::send(Buffer& buf)
+	{
+		write(channel_->fd(), buf_.begin(), buf_.size());
+		buf.addBegin(buf.size());
 	}
 
 	void TcpClient::registerChannel( int fd )
@@ -110,9 +121,9 @@ namespace khaki {
 		loop_(loop), 
 		listen_(NULL), 
 		addr_(host, port), 
-		time_wheel(new TimeWheel(10))
+		time_wheel(new TimeWheel(60))
 	{
-		time_wheel_ = new Channel(loop, time_wheel->getTimeFd(), kReadEv);
+		time_wheel_ = new Channel(loop_, time_wheel->getTimeFd(), kReadEv);
 		time_wheel_->OnRead([this]{ handleTimeWheel(); });
 	}
 
@@ -180,7 +191,7 @@ namespace khaki {
 
 	void TcpServer::newConnect( int fd, IpAddr& addr )
 	{
-		TcpClientPtr conPtr( new TcpClient(loop_, this, time_wheel));
+		TcpClientPtr conPtr( new TcpClient(getEventLoop(), this, time_wheel));
 		conPtr->setReadCallback(readcb_);
 		conPtr->registerChannel(fd);
 

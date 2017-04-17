@@ -1,7 +1,7 @@
 #ifndef MAMBA_MAIN_H
 #define MAMBA_MAIN_H
 
-#include "../khaki.h
+#include "../khaki.h"
 
 struct Role {
     int x;

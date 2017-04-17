@@ -10,15 +10,17 @@
 poll.h
 /home/khaki/item/khaki/poll.h
 
+/home/khaki/item/khaki/EventLoopThread.h
+EventLoop.h
+/home/khaki/item/khaki/EventLoop.h
+thread
+-
+condition_variable
+-
+
 /home/khaki/item/khaki/buffer.h
 string
 -
-
-/home/khaki/item/khaki/channel.cpp
-channel.h
-/home/khaki/item/khaki/channel.h
-log.h
-/home/khaki/item/khaki/log.h
 
 /home/khaki/item/khaki/channel.h
 poll.h
@@ -58,11 +60,21 @@ syslog.h
 map
 -
 
+/home/khaki/item/khaki/net.cpp
+net.h
+/home/khaki/item/khaki/net.h
+time_wheel.h
+/home/khaki/item/khaki/time_wheel.h
+log.h
+/home/khaki/item/khaki/log.h
+
 /home/khaki/item/khaki/net.h
 buffer.h
 /home/khaki/item/khaki/buffer.h
 EventLoop.h
 /home/khaki/item/khaki/EventLoop.h
+EventLoopThread.h
+/home/khaki/item/khaki/EventLoopThread.h
 channel.h
 /home/khaki/item/khaki/channel.h
 log.h
@@ -74,6 +86,8 @@ string.h
 memory
 -
 mutex
+-
+thread
 -
 
 /home/khaki/item/khaki/poll.h
@@ -93,14 +107,6 @@ set
 -
 unistd.h
 -
-
-/home/khaki/item/khaki/time_wheel.cpp
-time_wheel.h
-/home/khaki/item/khaki/time_wheel.h
-util.h
-/home/khaki/item/khaki/util.h
-log.h
-/home/khaki/item/khaki/log.h
 
 /home/khaki/item/khaki/time_wheel.h
 net.h

@@ -38,10 +38,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/bin/cmake
+CMAKE_COMMAND = /usr/local/bin/cmake
 
 # The command to remove a file.
-RM = /usr/bin/cmake -E remove -f
+RM = /usr/local/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/khaki/item/khaki
 CMakeFiles/khaki.dir/all:
 	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/depend
 	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/khaki/item/khaki/CMakeFiles  1 2 3 4 5 6 7
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/khaki/item/khaki/CMakeFiles  1 2 3 4 5 6 7 8
 	@echo "Built target khaki"
 .PHONY : CMakeFiles/khaki.dir/all
 
@@ -69,7 +69,7 @@ all: CMakeFiles/khaki.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/khaki.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/khaki/item/khaki/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/khaki/item/khaki/CMakeFiles 8
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/khaki.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/khaki/item/khaki/CMakeFiles 0
 .PHONY : CMakeFiles/khaki.dir/rule

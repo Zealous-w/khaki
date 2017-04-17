@@ -5,6 +5,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
   "/home/khaki/item/khaki/EventLoop.cpp" "/home/khaki/item/khaki/CMakeFiles/khaki.dir/EventLoop.o"
+  "/home/khaki/item/khaki/EventLoopThread.cpp" "/home/khaki/item/khaki/CMakeFiles/khaki.dir/EventLoopThread.o"
   "/home/khaki/item/khaki/buffer.cpp" "/home/khaki/item/khaki/CMakeFiles/khaki.dir/buffer.o"
   "/home/khaki/item/khaki/channel.cpp" "/home/khaki/item/khaki/CMakeFiles/khaki.dir/channel.o"
   "/home/khaki/item/khaki/net.cpp" "/home/khaki/item/khaki/CMakeFiles/khaki.dir/net.o"

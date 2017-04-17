@@ -30,10 +30,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/bin/cmake
+CMAKE_COMMAND = /usr/local/bin/cmake
 
 # The command to remove a file.
-RM = /usr/bin/cmake -E remove -f
+RM = /usr/local/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -50,7 +50,7 @@ CMAKE_BINARY_DIR = /home/khaki/item/khaki/example
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running interactive CMake command-line interface..."
-	/usr/bin/cmake -i .
+	/usr/local/bin/cmake -i .
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -60,7 +60,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -111,6 +111,43 @@ echo/fast:
 	$(MAKE) -f CMakeFiles/echo.dir/build.make CMakeFiles/echo.dir/build
 .PHONY : echo/fast
 
+#=============================================================================
+# Target rules for targets named mamba
+
+# Build rule for target.
+mamba: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 mamba
+.PHONY : mamba
+
+# fast build rule for target.
+mamba/fast:
+	$(MAKE) -f CMakeFiles/mamba.dir/build.make CMakeFiles/mamba.dir/build
+.PHONY : mamba/fast
+
+Mamba.o: Mamba.cpp.o
+.PHONY : Mamba.o
+
+# target to build an object file
+Mamba.cpp.o:
+	$(MAKE) -f CMakeFiles/mamba.dir/build.make CMakeFiles/mamba.dir/Mamba.cpp.o
+.PHONY : Mamba.cpp.o
+
+Mamba.i: Mamba.cpp.i
+.PHONY : Mamba.i
+
+# target to preprocess a source file
+Mamba.cpp.i:
+	$(MAKE) -f CMakeFiles/mamba.dir/build.make CMakeFiles/mamba.dir/Mamba.cpp.i
+.PHONY : Mamba.cpp.i
+
+Mamba.s: Mamba.cpp.s
+.PHONY : Mamba.s
+
+# target to generate assembly for a file
+Mamba.cpp.s:
+	$(MAKE) -f CMakeFiles/mamba.dir/build.make CMakeFiles/mamba.dir/Mamba.cpp.s
+.PHONY : Mamba.cpp.s
+
 echo.o: echo.cpp.o
 .PHONY : echo.o
 
@@ -143,7 +180,11 @@ help:
 	@echo "... depend"
 	@echo "... echo"
 	@echo "... edit_cache"
+	@echo "... mamba"
 	@echo "... rebuild_cache"
+	@echo "... Mamba.o"
+	@echo "... Mamba.i"
+	@echo "... Mamba.s"
 	@echo "... echo.o"
 	@echo "... echo.i"
 	@echo "... echo.s"

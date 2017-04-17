@@ -30,10 +30,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/bin/cmake
+CMAKE_COMMAND = /usr/local/bin/cmake
 
 # The command to remove a file.
-RM = /usr/bin/cmake -E remove -f
+RM = /usr/local/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -50,7 +50,7 @@ CMAKE_BINARY_DIR = /home/khaki/item/khaki
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running interactive CMake command-line interface..."
-	/usr/bin/cmake -i .
+	/usr/local/bin/cmake -i .
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -60,7 +60,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -125,6 +125,21 @@ EventLoop.i:
 EventLoop.s:
 	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/EventLoop.s
 .PHONY : EventLoop.s
+
+# target to build an object file
+EventLoopThread.o:
+	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/EventLoopThread.o
+.PHONY : EventLoopThread.o
+
+# target to preprocess a source file
+EventLoopThread.i:
+	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/EventLoopThread.i
+.PHONY : EventLoopThread.i
+
+# target to generate assembly for a file
+EventLoopThread.s:
+	$(MAKE) -f CMakeFiles/khaki.dir/build.make CMakeFiles/khaki.dir/EventLoopThread.s
+.PHONY : EventLoopThread.s
 
 # target to build an object file
 buffer.o:
@@ -228,6 +243,9 @@ help:
 	@echo "... EventLoop.o"
 	@echo "... EventLoop.i"
 	@echo "... EventLoop.s"
+	@echo "... EventLoopThread.o"
+	@echo "... EventLoopThread.i"
+	@echo "... EventLoopThread.s"
 	@echo "... buffer.o"
 	@echo "... buffer.i"
 	@echo "... buffer.s"

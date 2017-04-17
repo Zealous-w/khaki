@@ -1,4 +1,5 @@
 #include "EventLoopThread.h"
+#include "log.h"
 
 namespace khaki {
     EventLoopThread::EventLoopThread():
@@ -19,12 +20,19 @@ namespace khaki {
         return loop_;
     }
 
-    void EventLoopThread::loopThread()
+    void EventLoopThread::startLoop()
     {
+        std::unique_lock<std::mutex> lck(mtx_);
+        loop_ = new EventLoop();
+        cond_.notify_all();
     }
 
     void EventLoopThread::run()
     {
+        {
+            std::unique_lock<std::mutex> lck(mtx_);
+            while ( loop_ == NULL ) cond_.wait(lck);
+        }
 
         loop_->loop();
     }

@@ -3,6 +3,7 @@
 
 #include "buffer.h"
 #include "EventLoop.h"
+#include "EventLoopThread.h"
 #include "channel.h"
 #include "log.h"
 
@@ -10,6 +11,7 @@
 #include <string.h>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 namespace khaki {
 
@@ -47,8 +49,9 @@ namespace khaki {
 		void setReadCallback(const Callback& cb) { readcb_ = cb; }
 		void setWriteCallback(const Callback& cb) { writecb_ = cb; }
 
-		void send(char* buf);
-		char* getBuf() { return buf; }
+		void send(char* buf, int len);
+		void send(Buffer& buf);
+		Buffer& getBuf() { return buf_; }
 		void registerChannel(int fd);
 		void closeClient();
 		int getFd();
@@ -61,7 +64,7 @@ namespace khaki {
 		std::shared_ptr<Channel> channel_;
 		std::weak_ptr<TimeWheel> time_wheel_;
 		Callback readcb_, writecb_;
-		char buf[1024];
+		Buffer buf_;
 
 		int last_read_time_;
 
@@ -73,11 +76,11 @@ namespace khaki {
 	public:
 		
 		TcpServer( EventLoop* loop, std::string host, int port );
-		~TcpServer();
+		virtual ~TcpServer();
 
 		void start();
 
-		EventLoop* getEventLoop() { return loop_; }  
+		virtual EventLoop* getEventLoop() { return loop_; }  
 		void handlerRead(const Callback& cb) { readcb_ = cb; }
 		void handlerWrite(const Callback& cb) { writecb_ = cb; }
 
@@ -100,6 +103,47 @@ namespace khaki {
 		std::shared_ptr<TimeWheel> time_wheel;
 		std::mutex mtx_;
 		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 
+	};
+
+	////////////////////////////////////
+	class TcpThreadServer : public TcpServer {
+	public:
+		typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
+		
+		TcpThreadServer( EventLoop* loop, std::string host, int port ) :
+			index_(0),
+			TcpServer(loop, host, port), 
+			threadNum(std::thread::hardware_concurrency())
+		{
+			klog_info("threadNum : %d", threadNum);
+			for ( int i = 0; i < threadNum; i++ ) {
+				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
+			}
+
+			for ( auto v : vThreadLoop_ ) {
+				v->startLoop();
+			}
+
+			threadSize = vThreadLoop_.size();
+		}
+
+		~TcpThreadServer()
+		{
+		}
+
+		virtual EventLoop* getEventLoop() 
+		{
+			index_++;
+			if ( index_  >= threadSize ) index_ = 0;
+			klog_info("getEventLoop() index_ : %d Sum : %d", index_, threadSize);
+			return vThreadLoop_[index_]->getLoop();
+		}  
+
+	private:
+		int index_;
+		int threadNum;
+		int threadSize;
+		std::vector<EventLoopThreadPtr> vThreadLoop_;
 	};
 }
 

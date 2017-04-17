@@ -16,9 +16,15 @@ namespace khaki{
 		char* begin() const;
 		char* end() const;
 		char* data() const;
+		void move();
+		void append(char* buf, int len);
+		void alloc(int len);
+		void addBegin(int len);
+		std::string show();
 
 	private:
 		char* buf_;
+		int size_, begin_, end_, cap_;
 	};
 }
 

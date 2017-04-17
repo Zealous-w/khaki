@@ -142,9 +142,11 @@ string
 vector
 -
 
-/home/khaki/item/khaki/example/echo.cpp
+/home/khaki/item/khaki/example/Mamba.cpp
+Mamba.h
+/home/khaki/item/khaki/example/Mamba.h
+
+/home/khaki/item/khaki/example/Mamba.h
 ../khaki.h
 /home/khaki/item/khaki/example/../khaki.h
-iostream
--
 

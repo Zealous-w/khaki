@@ -6,6 +6,12 @@ CMakeFiles/khaki.dir/EventLoop.o
  /home/khaki/item/khaki/EventLoop.h
  /home/khaki/item/khaki/poll.h
  /home/khaki/item/khaki/util.h
+CMakeFiles/khaki.dir/EventLoopThread.o
+ /home/khaki/item/khaki/EventLoop.h
+ /home/khaki/item/khaki/EventLoopThread.cpp
+ /home/khaki/item/khaki/EventLoopThread.h
+ /home/khaki/item/khaki/poll.h
+ /home/khaki/item/khaki/util.h
 CMakeFiles/khaki.dir/buffer.o
  /home/khaki/item/khaki/buffer.cpp
  /home/khaki/item/khaki/buffer.h
@@ -18,6 +24,7 @@ CMakeFiles/khaki.dir/channel.o
  /home/khaki/item/khaki/util.h
 CMakeFiles/khaki.dir/net.o
  /home/khaki/item/khaki/EventLoop.h
+ /home/khaki/item/khaki/EventLoopThread.h
  /home/khaki/item/khaki/buffer.h
  /home/khaki/item/khaki/channel.h
  /home/khaki/item/khaki/log.h
@@ -35,6 +42,7 @@ CMakeFiles/khaki.dir/poll.o
  /home/khaki/item/khaki/util.h
 CMakeFiles/khaki.dir/time_wheel.o
  /home/khaki/item/khaki/EventLoop.h
+ /home/khaki/item/khaki/EventLoopThread.h
  /home/khaki/item/khaki/buffer.h
  /home/khaki/item/khaki/channel.h
  /home/khaki/item/khaki/log.h

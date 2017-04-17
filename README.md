@@ -1,7 +1,7 @@
 # C++ Network Library
 
 ## Khaki
-仅仅是为了学习和自己使用而写的
+仅仅是为了自己学习
 参考handy和muduo
 还在改进中
 

@@ -1,1 +1,2 @@
 /home/khaki/item/khaki/example/CMakeFiles/echo.dir
+/home/khaki/item/khaki/example/CMakeFiles/mamba.dir
