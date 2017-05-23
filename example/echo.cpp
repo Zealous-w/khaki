@@ -62,8 +62,6 @@ private:
 int main( int argc, char* argv[] )
 {
 	khaki::EventLoop loop;
-	//khaki::TcpServer server(&loop, "127.0.0.1", 9527);
-	//khaki::TcpThreadServer server(&loop, "127.0.0.1", 9527);
 	khaki::Log::getLog().setLogLevel(khaki::Log::LogLevel::E_LOG_INFO);
 
 	EchoServer echo(&loop, "127.0.0.1", 9527, 4);
