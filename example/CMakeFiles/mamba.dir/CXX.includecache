@@ -45,6 +45,8 @@ util.h
 /home/khaki/item/khaki/util.h
 log.h
 /home/khaki/item/khaki/log.h
+buffer.h
+/home/khaki/item/khaki/buffer.h
 
 /home/khaki/item/khaki/log.h
 util.h

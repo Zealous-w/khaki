@@ -8,6 +8,7 @@ namespace khaki{
 	class Buffer {
 	public:
 		Buffer();
+		Buffer(const Buffer& buf);
 		~Buffer();
 
 		void clear();

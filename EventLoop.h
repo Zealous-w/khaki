@@ -17,6 +17,7 @@ namespace khaki{
 
     class EventLoop {
     public:
+        typedef std::function<void()> EventCallback;
         EventLoop();
         ~EventLoop();
 
@@ -27,12 +28,19 @@ namespace khaki{
         void setStatus(bool status);
         std::shared_ptr<TimeWheel>& getTimeWheelPtr() { return time_wheel; }
         virtual EventLoop* getNextLoop() { return this; }
-
+        bool isInLoopThread() { return id_ == std::this_thread::get_id(); }
+        void executeInLoop(const EventCallback& cb);
+        void handlerWakeUpRead();
     private:
         bool byRunning_;
+        std::mutex mtx_;
         PollEpoll* poll_;
         Channel* cTimeWheel_;
+        int wakeupFd_;
+        Channel* cWeakUp_;
+        std::thread::id id_;
         std::shared_ptr<TimeWheel> time_wheel;
+        std::vector<EventCallback> vCallback_;
     };
 }
 

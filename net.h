@@ -43,15 +43,17 @@ namespace khaki {
 		TcpClient( EventLoop* loop, TcpServer* server );
 		~TcpClient();
 
-		void handleRead(const TcpClientPtr& con) ;
-		void handleWrite(const TcpClientPtr& con) ;
+		void handleRead(const TcpClientPtr& con);
+		void handleWrite(const TcpClientPtr& con);
 
 		void setReadCallback(const Callback& cb) { readcb_ = cb; }
 		void setWriteCallback(const Callback& cb) { writecb_ = cb; }
+		void setCloseCallback(const Callback& cb) { closecb_ = cb; }
 
 		void send(char* buf, int len);
 		void send(Buffer& buf);
-		Buffer& getBuf() { return readBuf_; }
+		void sendInLoop(Buffer& buf);
+		Buffer getBuf() { Buffer tmp(readBuf_); readBuf_.clear(); return tmp; }
 		void registerChannel(int fd);
 		void closeClient(const TcpClientPtr& con);
 		int getFd();
@@ -63,7 +65,7 @@ namespace khaki {
 		EventLoop* loop_;
 		TcpServer* server_;
 		std::shared_ptr<Channel> channel_;
-		Callback readcb_, writecb_;
+		Callback readcb_, writecb_, closecb_;
 
 		int last_read_time_;
 
@@ -80,13 +82,16 @@ namespace khaki {
 		void start();
 
 		virtual EventLoop* getEventLoop() { return loop_; }  
-		void handlerRead(const Callback& cb) { readcb_ = cb; }
-		void handlerWrite(const Callback& cb) { writecb_ = cb; }
+		void setReadCallback(const Callback& cb) { readcb_ = cb; }
+		void setWriteCallback(const Callback& cb) { writecb_ = cb; }
+		void setConnectionCallback(const Callback& cb) { newcb_ = cb; }
+		void setConnCloseCallback(const Callback& cb) { closecb_ = cb; }
 
 		void send(char* buf);
 
 		int getOnlineNum();
-		void addClient(std::shared_ptr<TcpClient>& sp);
+		void addClient(TcpClientPtr& sp);
+		void removeClient(const TcpClientPtr& sp);
 		void delClient(int fd);
 	private:
 		void newConnect( int fd, IpAddr& addr );
@@ -95,7 +100,7 @@ namespace khaki {
 		EventLoop* loop_;
 		Channel* listen_;
 		IpAddr addr_;
-		Callback readcb_, writecb_, newcb_;
+		Callback readcb_, writecb_, newcb_, closecb_;
 		std::mutex mtx_;
 		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 
 	};
@@ -106,15 +111,15 @@ namespace khaki {
 	public:
 		typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
 		
-		TcpThreadServer( EventLoop* loop, std::string host, int port );
+		TcpThreadServer( EventLoop* loop, std::string host, int port, int threadNum = 0 );
 
 		~TcpThreadServer();
 		virtual EventLoop* getEventLoop();
 
 	private:
 		int index_;
-		int threadNum;
-		int threadSize;
+		int threadNum_;
+		int threadSize_;
 		std::vector<EventLoopThreadPtr> vThreadLoop_;
 	};
 }

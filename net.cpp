@@ -43,12 +43,10 @@ namespace khaki {
 	TcpClient::TcpClient( EventLoop* loop, TcpServer* server ) :
 		loop_(loop), server_(server)
 	{
-		//klog_info("TcpClient");
 	}
 
 	TcpClient::~TcpClient()
 	{
-		//klog_info("~TcpClient");
 	}
 
 	void TcpClient::handleRead(const TcpClientPtr& con)
@@ -76,7 +74,8 @@ namespace khaki {
 				updateTimeWheel();
 			}
 		}
-		//klog_info("********read end return");
+
+		klog_info("%s", readBuf_.show().c_str());
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
@@ -96,7 +95,6 @@ namespace khaki {
 			ret = write(channel_->fd(), buf, len - sendSize );
 			if (ret > 0) {
 				sendSize += ret;
-				
 				continue;
 			} else if (ret == -1 && errno == EINTR) {
 				continue;
@@ -132,7 +130,20 @@ namespace khaki {
 
 	void TcpClient::send(Buffer& buf)
 	{
-		//write(channel_->fd(), buf.begin(), buf.size());
+		if (loop_->isInLoopThread())
+		{
+			klog_info("send");
+			sendInLoop(buf);
+		}
+		else
+		{
+			klog_info("send in loop");
+			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, this, buf));
+		}
+	}
+
+	void TcpClient::sendInLoop(Buffer& buf)
+	{
 		if ( buf.size() )
 		{
 			int size = directWrite(buf.begin(), buf.size());
@@ -150,8 +161,8 @@ namespace khaki {
 		channel_ = std::shared_ptr<Channel>(new Channel(loop_, fd, kReadEv));
 
 		TcpClientPtr conPtr = shared_from_this();
-		conPtr->channel_->OnRead([=](){conPtr->handleRead(conPtr);});
-		conPtr->channel_->OnWrite([=](){conPtr->handleWrite(conPtr);});
+		conPtr->channel_->OnRead(std::bind(&TcpClient::handleRead, this, conPtr));
+		conPtr->channel_->OnWrite(std::bind(&TcpClient::handleWrite, this, conPtr));
 
 		updateTimeWheel();
 	}
@@ -161,6 +172,8 @@ namespace khaki {
 		if (readcb_ && readBuf_.size()) {
         	readcb_(con);
     	}
+		if ( closecb_ ) closecb_(con);
+
 		readcb_ = NULL;
 		writecb_ = NULL;
 
@@ -232,11 +245,22 @@ namespace khaki {
 		return count;
 	}
 
-	void TcpServer::addClient(std::shared_ptr<TcpClient>& sp)
+	void TcpServer::addClient(TcpClientPtr& sp)
 	{
 		mtx_.lock();
 		sSessionList.insert( std::make_pair(sp->getFd(), std::weak_ptr<TcpClient>(sp)) );
 		mtx_.unlock();
+		klog_info("add client num : %d", sSessionList.size());
+	}
+
+	void TcpServer::removeClient(const TcpClientPtr& sp)
+	{
+		mtx_.lock();
+		auto sc = sSessionList.find(sp->getFd());
+		if ( sc != sSessionList.end() ) sSessionList.erase(sp->getFd());
+		mtx_.unlock();
+		klog_info("remove client num : %d", sSessionList.size());
+		if (closecb_) closecb_(sp);
 	}
 
 	void TcpServer::delClient(int fd)
@@ -251,9 +275,16 @@ namespace khaki {
 	{
 		EventLoop* loop_c = getEventLoop();
 		util::setNonBlock(fd);
-		TcpClientPtr conPtr( new TcpClient(loop_c, this));
-		conPtr->setReadCallback(readcb_);
-		conPtr->registerChannel(fd);
+
+		TcpClientPtr conPtr(new TcpClient(loop_c, this));
+		{
+			conPtr->setReadCallback(readcb_);
+			conPtr->setCloseCallback(std::bind(&TcpServer::removeClient, this, std::placeholders::_1));
+			conPtr->registerChannel(fd);
+			addClient(conPtr);
+		}
+		
+		if (newcb_) newcb_(conPtr);
 	}
 
 	void TcpServer::handleAccept()
@@ -264,17 +295,17 @@ namespace khaki {
 		while ( ( connfd = accept(listen_->fd(), (struct sockaddr*)&caddr, &csize) ) != -1 ) 
 		{
 			IpAddr cAddr(caddr);
-			//klog_info("Accept a new connection %d", connfd);
 			newConnect( connfd, cAddr );
 		}
 	}
 
 	/////////////////////////////////////////
-	TcpThreadServer::TcpThreadServer( EventLoop* loop, std::string host, int port ) :
+	TcpThreadServer::TcpThreadServer( EventLoop* loop, std::string host, int port, int threadNum ) :
 			index_(0),
 			TcpServer(loop, host, port), 
-			threadNum(std::thread::hardware_concurrency())
+			threadNum_(threadNum)
 		{
+			if (threadNum_ == 0) { threadNum_ = std::thread::hardware_concurrency(); }
 			klog_info("threadNum : %d", threadNum);
 			for ( int i = 0; i < threadNum; i++ ) {
 				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
@@ -284,7 +315,7 @@ namespace khaki {
 				v->startLoop();
 			}
 
-			threadSize = vThreadLoop_.size();
+			threadSize_ = vThreadLoop_.size();
 		}
 
 		TcpThreadServer::~TcpThreadServer()
@@ -294,7 +325,7 @@ namespace khaki {
 		EventLoop* TcpThreadServer::getEventLoop() 
 		{
 			index_++;
-			if ( index_  >= threadSize ) index_ = 0;
+			if ( index_  >= threadSize_ ) index_ = 0;
 			//klog_info("getEventLoop() index_ : %d Sum : %d", index_, threadSize);
 			return vThreadLoop_[index_]->getLoop();
 		}  

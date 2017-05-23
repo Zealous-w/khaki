@@ -6,13 +6,11 @@ namespace khaki {
 	Channel::Channel(EventLoop* loop, int fd, int event):
     		loop_(loop), fd_(fd), events_(event | EPOLLET), readcb_(NULL), writecb_(NULL)
 	{
-		//klog_info("Channel : %d", fd_);
 	    loop_->getPoll()->addChannel(this);
 	}
 
 	Channel::~Channel()
 	{
-		//klog_info("~Channel : %d", fd_);
 	    loop_->getPoll()->removeChannel(this);
 	    close(fd_);
 		fd_ = -1;

@@ -23,19 +23,17 @@ namespace khaki {
     void EventLoopThread::startLoop()
     {
         std::unique_lock<std::mutex> lck(mtx_);
-        loop_ = new EventLoop();
-        cond_.notify_one();
+        cond_.wait(lck, [this]()->bool{ return loop_ != NULL; });
     }
 
     void EventLoopThread::run()
     {
         {
             std::unique_lock<std::mutex> lck(mtx_);
-            while ( loop_ == NULL ) cond_.wait(lck);
+            loop_ = new EventLoop();
         }
-
-        //klog_info("Thread %x", loop_);
-
+        
+        cond_.notify_one();
         loop_->loop();
     }
 }

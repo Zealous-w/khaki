@@ -27,6 +27,8 @@ poll.h
 /home/khaki/item/khaki/khaki.h
 iostream
 -
+unordered_map
+-
 
 /home/khaki/item/khaki/khaki.h
 buffer.h
@@ -43,6 +45,8 @@ util.h
 /home/khaki/item/khaki/util.h
 log.h
 /home/khaki/item/khaki/log.h
+buffer.h
+/home/khaki/item/khaki/buffer.h
 
 /home/khaki/item/khaki/log.h
 util.h

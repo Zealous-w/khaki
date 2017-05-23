@@ -9,14 +9,25 @@ namespace khaki{
 Buffer::Buffer() : buf_(NULL), begin_(0), end_(0), cap_(0), size_(0) {
 
 }
+
+Buffer::Buffer(const Buffer& buf)
+{
+	buf_ = new char[buf.size()];
+	memcpy(buf_, buf.buf_, (size_t)buf.size());
+	begin_ = 0;
+	end_ = buf.size();
+	cap_ = buf.size();
+	size_ = buf.size();
+}
+
 Buffer::~Buffer() {
 	if (buf_) delete[] buf_;
 }
 
 void Buffer::clear() {
-	if (buf_) delete[] buf_;
-	buf_ = NULL;
 	size_ = 0;
+	begin_ = 0;
+	end_ = 0;
 }
 
 bool Buffer::empty() const {

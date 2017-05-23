@@ -2,16 +2,16 @@
 
 int main( int argc, char* argv[] )
 {
-    khaki::EventLoop loop;
-	khaki::TcpServer server(&loop, "127.0.0.1", 9527);
-	khaki::Log::getLog().setLogLevel(khaki::Log::LogLevel::E_LOG_DEBUG);
+    // khaki::EventLoop loop;
+	// khaki::TcpServer server(&loop, "127.0.0.1", 9527);
+	// khaki::Log::getLog().setLogLevel(khaki::Log::LogLevel::E_LOG_DEBUG);
 	
-	server.handlerRead([](const khaki::TcpClientPtr& con){
-		con->send(con->getBuf());
-	});
+	// server.handlerRead([](const khaki::TcpClientPtr& con){
+	// 	con->send(con->getBuf());
+	// });
 
-	server.start();
+	// server.start();
 
-	loop.loop();
+	// loop.loop();
 	return 0;
 }

@@ -12,5 +12,6 @@
 #include "net.h"
 #include "util.h"
 #include "log.h"
+#include "buffer.h"
 
 #endif //KHAKI_KHAKI_H
