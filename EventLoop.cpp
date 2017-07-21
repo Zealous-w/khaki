@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "EventLoop.h"
-#include "channel.h"
+#include "Channel.h"
 
 namespace khaki{
 

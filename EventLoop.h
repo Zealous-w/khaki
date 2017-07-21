@@ -4,8 +4,8 @@
 #ifndef KHAKI_EVENTLOOP_H
 #define KHAKI_EVENTLOOP_H
 
-#include "pollEpoll.h"
-#include "time_wheel.h"
+#include "PollEpoll.h"
+#include "TimeWheel.h"
 
 #include <memory>
 

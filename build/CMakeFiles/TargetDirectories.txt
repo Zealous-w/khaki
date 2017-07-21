@@ -1,1 +1,0 @@
-/home/khaki/item/AthenaServer/server/khaki/build/CMakeFiles/khaki.dir

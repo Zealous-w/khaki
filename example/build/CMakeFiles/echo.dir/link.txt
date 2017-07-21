@@ -1,1 +1,0 @@
-/usr/bin/c++    -std=c++11 -pthread    CMakeFiles/echo.dir/echo.cpp.o  -o echo -rdynamic /home/khaki/item/AthenaServer/server/khaki/build/libkhaki.a /home/khaki/item/AthenaServer/server/khaki/build/../deps/lib/liblog4cpp.a 

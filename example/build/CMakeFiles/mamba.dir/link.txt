@@ -1,1 +1,0 @@
-/usr/bin/c++    -std=c++11 -pthread    CMakeFiles/mamba.dir/Mamba.cpp.o  -o mamba -rdynamic /home/khaki/item/AthenaServer/server/khaki/build/libkhaki.a 
