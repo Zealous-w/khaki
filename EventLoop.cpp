@@ -57,7 +57,7 @@ namespace khaki{
 		int n = read(wakeupFd_, &one, sizeof one);
 		if (n != sizeof one)
 		{
-			klog_info("read wakeup fd error");
+			log4cppDebug(logger, "read wakeup fd error");
 		}
 
 		std::vector<EventCallback> vTmp;

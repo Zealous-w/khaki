@@ -1,5 +1,4 @@
 #include "EventLoopThread.h"
-#include "log.h"
 
 namespace khaki {
     EventLoopThread::EventLoopThread():

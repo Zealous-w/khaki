@@ -1,7 +1,7 @@
 #ifndef KHAKI_CHANNEL_H
 #define KHAKI_CHANNEL_H
 
-#include "poll.h"
+#include "pollEpoll.h"
 
 namespace khaki{
     class EventLoop;

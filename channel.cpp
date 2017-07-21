@@ -1,6 +1,5 @@
 #include "channel.h"
 #include "EventLoop.h"
-#include "log.h"
 
 namespace khaki {
 	Channel::Channel(EventLoop* loop, int fd, int event):

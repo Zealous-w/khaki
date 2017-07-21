@@ -75,14 +75,16 @@ namespace khaki {
 			}
 		}
 
-		klog_info("%s", readBuf_.show().c_str());
+		//klog_info("%s", readBuf_.show().c_str());
+		//log4cppDebug(logger, "%s", readBuf_.show().c_str());
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
 	{
 		int size = directWrite(writeBuf_.begin(), writeBuf_.size());
 		writeBuf_.addBegin(size);
-		klog_info("****** trigger EPOLL_OUT");
+		//klog_info("****** trigger EPOLL_OUT");
+		//log4cppDebug(logger, "****** trigger EPOLL_OUT");
 	}
 
 	int TcpClient::directWrite(const char* buf, int len)
@@ -101,7 +103,7 @@ namespace khaki {
 			} else if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 				break;
 			} else {
-				klog_info("write error client closed");
+				//log4cppDebug(logger, "write error client closed");
 				break;
 			}
 		}
@@ -132,12 +134,10 @@ namespace khaki {
 	{
 		if (loop_->isInLoopThread())
 		{
-			klog_info("send");
 			sendInLoop(buf);
 		}
 		else
 		{
-			klog_info("send in loop");
 			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, this, buf));
 		}
 	}
@@ -198,7 +198,7 @@ namespace khaki {
 		int fd_ = socket(AF_INET, SOCK_STREAM, 0);
 		if ( util::setReuseAddr(fd_) == -1 )
 		{
-			klog_info("TcpServer Sockopt Error");
+			log4cppDebug(logger, "TcpServer Sockopt Error");
 			close(fd_);
 			loop_->setStatus(false);
 			return;
@@ -209,7 +209,7 @@ namespace khaki {
 		int ret = bind(fd_, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
 		if (ret == -1)
 		{
-			klog_info("TcpServer Bind Error, please wait a minutes");
+			log4cppDebug(logger, "TcpServer Bind Error, please wait a minutes");
 			close(fd_);
 			loop_->setStatus(false);
 			return;
@@ -217,7 +217,7 @@ namespace khaki {
 
 		if (listen(fd_, 20) == -1 )
 		{
-			klog_info("TcpServer Listen Error");
+			log4cppDebug(logger, "TcpServer Listen Error");
 			close(fd_);
 			loop_->setStatus(false);
 			return;
@@ -226,7 +226,7 @@ namespace khaki {
 		listen_ = new Channel(loop_, fd_, kReadEv);
 		listen_->OnRead([this]{ handleAccept(); });
 
-		klog_info("TcpServer Listen %s:%d", addr_.getIp().c_str(), addr_.getPort());
+		log4cppDebug(logger, "TcpServer Listen %s:%d", addr_.getIp().c_str(), addr_.getPort());
 	}
 
 	void TcpServer::send(char* buf)
@@ -250,7 +250,6 @@ namespace khaki {
 		mtx_.lock();
 		sSessionList.insert( std::make_pair(sp->getFd(), std::weak_ptr<TcpClient>(sp)) );
 		mtx_.unlock();
-		klog_info("add client num : %d", sSessionList.size());
 	}
 
 	void TcpServer::removeClient(const TcpClientPtr& sp)
@@ -259,7 +258,7 @@ namespace khaki {
 		auto sc = sSessionList.find(sp->getFd());
 		if ( sc != sSessionList.end() ) sSessionList.erase(sp->getFd());
 		mtx_.unlock();
-		klog_info("remove client num : %d", sSessionList.size());
+		//klog_info("remove client num : %d", sSessionList.size());
 		if (closecb_) closecb_(sp);
 	}
 
@@ -306,7 +305,7 @@ namespace khaki {
 			threadNum_(threadNum)
 		{
 			if (threadNum_ == 0) { threadNum_ = std::thread::hardware_concurrency(); }
-			klog_info("threadNum : %d", threadNum);
+			log4cppDebug(logger, "threadNum : %d", threadNum);
 			for ( int i = 0; i < threadNum; i++ ) {
 				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
 			}
@@ -326,7 +325,6 @@ namespace khaki {
 		{
 			index_++;
 			if ( index_  >= threadSize_ ) index_ = 0;
-			//klog_info("getEventLoop() index_ : %d Sum : %d", index_, threadSize);
 			return vThreadLoop_[index_]->getLoop();
 		}  
 }

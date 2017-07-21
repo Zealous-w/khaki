@@ -1,1 +1,0 @@
-/home/khaki/item/khaki/CMakeFiles/khaki.dir

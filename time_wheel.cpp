@@ -1,6 +1,5 @@
 #include "time_wheel.h"
 #include "util.h"
-#include "log.h"
 
 namespace khaki {
 
@@ -57,7 +56,7 @@ namespace khaki {
 				index++;
 			}
 			str +="   ----------------\n";
-			klog_debg(str.c_str());
+			//klog_debg(str.c_str());
 		}
 
 		void TimeWheel::handlerRead()
@@ -72,7 +71,7 @@ namespace khaki {
 				if ( !wp.second.expired() )
 				{
 					TcpClientPtr con = wp.second.lock();
-					klog_info("time wheel, lasttime = %d, size = %d, now=%d", con->getLastTime(), size_, now);
+					//klog_info("time wheel, lasttime = %d, size = %d, now=%d", con->getLastTime(), size_, now);
 					if (con->getLastTime() + size_ - 1 <= now) con->closeClient(con);
 				} 
 			}

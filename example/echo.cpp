@@ -62,11 +62,13 @@ private:
 int main( int argc, char* argv[] )
 {
 	khaki::EventLoop loop;
-	khaki::Log::getLog().setLogLevel(khaki::Log::LogLevel::E_LOG_INFO);
+	khaki::InitKhakiLog(khaki::logger, "./echo.log", log4cpp::Priority::DEBUG);
 
 	EchoServer echo(&loop, "127.0.0.1", 9527, 4);
 	echo.start();
 
 	loop.loop();
+
+	log4cpp::Category::shutdown();
 	return 0;
 }

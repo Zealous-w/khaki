@@ -2,7 +2,6 @@
 #define KHAKI_TIME_WHEEL_H
 
 #include "net.h"
-#include "log.h"
 
 #include <time.h>
 #include <sys/time.h>

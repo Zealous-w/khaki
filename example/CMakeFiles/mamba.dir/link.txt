@@ -1,1 +1,0 @@
-/usr/bin/g++    -std=c++11 -pthread    CMakeFiles/mamba.dir/Mamba.cpp.o  -o mamba -rdynamic /home/khaki/item/khaki/libkhaki.a 

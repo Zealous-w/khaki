@@ -18,8 +18,31 @@
 #include <string.h>
 #include <syslog.h>
 #include <map>
+#include <string>
+
+#include <log4cpp/Category.hh>
+#include <log4cpp/FileAppender.hh>
+#include <log4cpp/PatternLayout.hh>
 
 namespace khaki {
+extern log4cpp::Category& logger;
+inline void InitKhakiLog(log4cpp::Category &logger, std::string filename, int level) {
+	log4cpp::PatternLayout* layout = new log4cpp::PatternLayout(); 
+	layout->setConversionPattern("%d: %p %c %x: %m%n");          
+	log4cpp::Appender* appender = new log4cpp::FileAppender("FileAppender", filename);
+	appender->setLayout(layout);    
+	logger.setAdditivity(false);
+	logger.setAppender(appender);
+	logger.setPriority(level);    
+}
+
+#define log4cppInfo(logger, ...) \
+	logger.info(__VA_ARGS__)
+#define log4cppWarn(logger, ...) \
+	logger.warn(__VA_ARGS__)
+#define log4cppDebug(logger, ...) \
+	logger.debug(__VA_ARGS__)
+
 class Log : public khaki::noncopyable {
 public:
 	typedef std::map<int, std::string> MapLogLevelStr;
