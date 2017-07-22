@@ -26,7 +26,7 @@
 
 namespace khaki {
 extern log4cpp::Category& logger;
-inline void InitKhakiLog(log4cpp::Category &logger, std::string filename, int level) {
+inline void InitLog(log4cpp::Category &logger, std::string filename, int level) {
 	log4cpp::PatternLayout* layout = new log4cpp::PatternLayout(); 
 	layout->setConversionPattern("%d: %p %c %x: %m%n");          
 	log4cpp::Appender* appender = new log4cpp::FileAppender("FileAppender", filename);
