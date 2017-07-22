@@ -39,7 +39,6 @@ namespace khaki {
 	}
 
 	//////////////////////////////////////
-
 	TcpClient::TcpClient( EventLoop* loop, TcpServer* server ) :
 		loop_(loop), server_(server)
 	{
@@ -51,14 +50,13 @@ namespace khaki {
 
 	void TcpClient::handleRead(const TcpClientPtr& con)
 	{
-		char buf[20480] = {0};
+		char buf[MAX_READ_BUFFER_SIZE] = {0};
 		int n = 0;
 		while ( true )
 		{
-			n = read(channel_->fd(), buf, 20480 );
+			n = read(channel_->fd(), buf, MAX_READ_BUFFER_SIZE );
 			if ( n < 0 && errno == EINTR )
 			{
-				//klog_info("read continue by EAGAIN"); continue;
 			} else if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) )
 			{
 				//klog_info("TcpClient::handleRead size : %d, buff : %s", n, buf_.show().c_str());
@@ -83,8 +81,6 @@ namespace khaki {
 	{
 		int size = directWrite(writeBuf_.begin(), writeBuf_.size());
 		writeBuf_.addBegin(size);
-		//klog_info("****** trigger EPOLL_OUT");
-		//log4cppDebug(logger, "****** trigger EPOLL_OUT");
 	}
 
 	int TcpClient::directWrite(const char* buf, int len)
@@ -94,7 +90,7 @@ namespace khaki {
 		int ret = 0;
 		while ( writeSize > sendSize )
 		{
-			ret = write(channel_->fd(), buf, len - sendSize );
+			ret = write(channel_->fd(), buf + sendSize, len - sendSize );
 			if (ret > 0) {
 				sendSize += ret;
 				continue;
@@ -258,7 +254,6 @@ namespace khaki {
 		auto sc = sSessionList.find(sp->getFd());
 		if ( sc != sSessionList.end() ) sSessionList.erase(sp->getFd());
 		mtx_.unlock();
-		//klog_info("remove client num : %d", sSessionList.size());
 		if (closecb_) closecb_(sp);
 	}
 
@@ -273,7 +268,7 @@ namespace khaki {
 	void TcpServer::newConnect( int fd, IpAddr& addr )
 	{
 		EventLoop* loop_c = getEventLoop();
-		util::setNonBlock(fd);
+		//util::setNonBlock(fd);
 
 		TcpClientPtr conPtr(new TcpClient(loop_c, this));
 		{
@@ -291,7 +286,7 @@ namespace khaki {
 		struct sockaddr_in caddr;
 		socklen_t csize = sizeof(struct sockaddr);
 		int connfd = -1;
-		while ( ( connfd = accept(listen_->fd(), (struct sockaddr*)&caddr, &csize) ) != -1 ) 
+		while ( ( connfd = accept4(listen_->fd(), (struct sockaddr*)&caddr, &csize, SOCK_NONBLOCK) ) != -1 ) 
 		{
 			IpAddr cAddr(caddr);
 			newConnect( connfd, cAddr );
@@ -326,5 +321,144 @@ namespace khaki {
 			index_++;
 			if ( index_  >= threadSize_ ) index_ = 0;
 			return vThreadLoop_[index_]->getLoop();
-		}  
+		}
+
+		///////////////////////////////////
+		Connector::Connector(EventLoop* loop, std::string host, uint16_t port):
+			loop_(loop), addr_(host, int(port)), channel_(NULL)
+		{
+			status_ == E_CONNECT_STATUS_CLOSE;
+		}
+
+		Connector::~Connector()
+		{
+			if ( status_ == E_CONNECT_STATUS_RUNNING ) {
+				closeFd(sockFd_);
+			}
+
+			if ( channel_ != NULL ) {delete channel_;}
+		}
+
+		bool Connector::connectServer()
+		{
+			if ( status_ == E_CONNECT_STATUS_RUNNING ) {
+				closeFd(sockFd_);
+			}
+			status_ = E_CONNECT_STATUS_CONN;
+			int sockFd = socket(AF_INET, SOCK_STREAM, 0);
+			if ( sockFd < 0 ) {
+				log4cppDebug(logger, "socket error, sockFd : %d", sockFd);
+				return false;
+			}
+
+			util::setNonBlock(sockFd);
+
+			int ret = bind(sockFd, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
+			if (ret == -1)
+			{
+				log4cppDebug(logger, "Connector Bind Error, please wait a minutes");
+				closeFd(sockFd);
+				return false;
+			}
+
+			int cRet = connect(sockFd, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
+			if ( cRet < 0 ) {
+				log4cppDebug(logger, "Connector connect Error, %d", cRet);
+				closeFd(sockFd);
+				return false;
+			}
+			
+			channel_ = new Channel(loop_, sockFd, kReadEv);
+			channel_->OnRead([this]{ handleRead(); });
+			channel_->OnWrite([this]{ handleWrite(); });
+			sockFd_ = sockFd;
+			status_ = E_CONNECT_STATUS_RUNNING;
+		}
+
+		bool Connector::retryConnect()
+		{
+			return connectServer();
+		}
+
+		void Connector::send(char* buf, int len)
+		{
+			writeBuf_.append(buf, len);
+			send(writeBuf_);
+		}
+
+		void Connector::send(Buffer& buf)
+		{
+			if (loop_->isInLoopThread())
+			{
+				sendInLoop(buf);
+			}
+			else
+			{
+				loop_->executeInLoop(std::bind(&Connector::sendInLoop, this, buf));
+			}
+		}
+
+		void Connector::sendInLoop(Buffer& buf)
+		{
+			if ( buf.size() )
+			{
+				directWrite(buf);
+			}
+			if ( buf.size() )
+			{
+				writeBuf_.append(buf.begin(), buf.size());
+				if (!channel_->writeStatus()) channel_->enableWrite(true);
+			}
+		}
+
+		size_t Connector::directWrite(Buffer& buffer)
+		{
+			char* buf = buffer.data();
+			int len = buffer.size();
+			int writeSize = buffer.size();
+			int sendSize = 0;
+			int ret = 0;
+			while ( writeSize > sendSize )
+			{
+				ret = write(channel_->fd(), buf + sendSize, len - sendSize );
+				if (ret > 0) {
+					sendSize += ret;
+					continue;
+				} else if (ret == -1 && errno == EINTR) {
+					continue;
+				} else if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+					break;
+				} else {
+					break;
+				}
+			}
+			buffer.addBegin(sendSize);
+		}
+
+		void Connector::handleRead()
+		{
+			char buf[MAX_READ_BUFFER_SIZE] = {0};
+			int n = 0;
+			while ( true )
+			{
+				n = read(channel_->fd(), buf, MAX_READ_BUFFER_SIZE );
+				if ( n < 0 && errno == EINTR )
+				{
+				} else if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) )
+				{
+					if ( readcb_ ) readcb_(readBuf_); break;
+				} else if ( channel_->fd() == -1 || n == 0 || n == -1 )	
+				{
+					closeFd(sockFd_); break;
+				} else 
+				{
+					readBuf_.append(buf, n);
+				}
+			}
+		}
+
+		void Connector::handleWrite()
+		{
+			directWrite(writeBuf_);
+		}
 }

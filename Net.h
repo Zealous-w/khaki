@@ -16,11 +16,12 @@ namespace khaki {
 	class TimeWheel;
 	class Channel;
 
+	const unsigned int MAX_READ_BUFFER_SIZE = 20480;
 	typedef std::weak_ptr<TcpClient> TcpWeakPtr;
 	typedef std::shared_ptr<TcpClient> TcpClientPtr;
 	typedef std::function<void(const TcpClientPtr& con)> Callback;
-
 	typedef std::shared_ptr<TimeWheel> TimeWheelPtr;
+	typedef std::function<void(Buffer& buf)> CallbackBuffer;
 
 	class IpAddr {
 	public:
@@ -103,6 +104,45 @@ namespace khaki {
 		Callback readcb_, writecb_, newcb_, closecb_;
 		std::mutex mtx_;
 		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 
+	};
+
+	////////////////////////////////////
+	class Connector : public std::enable_shared_from_this<Connector> {
+	public:
+		enum {
+			E_CONNECT_STATUS_CLOSE 	 = 0,
+			E_CONNECT_STATUS_CONN 	 = 1,
+			E_CONNECT_STATUS_RUNNING = 2,
+		};
+
+		Connector(EventLoop* loop, std::string host, uint16_t port);
+		~Connector();
+		bool connectServer();
+		bool retryConnect();
+		void setConnectCallback(const CallbackBuffer& cb) { newcb_ = cb; }
+		void setReadCallback(const CallbackBuffer& cb) { readcb_ = cb; }
+		void setWriteCallback(const CallbackBuffer& cb) { writecb_ = cb; }
+		void setCloseCallback(const CallbackBuffer& cb) { closecb_ = cb; }
+		void send(char* buf, int len);
+
+		void closeFd(int fd) { close(sockFd_); status_ = E_CONNECT_STATUS_CLOSE;}
+		int getFd() { return sockFd_; }
+		int getStatus() { return status_; }
+	private:
+		void handleRead();
+		void handleWrite();
+
+		size_t directWrite(Buffer& buffer);
+		void send(Buffer& buf);
+		void sendInLoop(Buffer& buf);
+	private:
+		EventLoop* loop_;
+		IpAddr addr_;
+		int sockFd_;
+		int status_;
+		Channel* channel_;
+		Buffer readBuf_, writeBuf_;
+		CallbackBuffer newcb_, readcb_, writecb_, closecb_; 
 	};
 
 	////////////////////////////////////

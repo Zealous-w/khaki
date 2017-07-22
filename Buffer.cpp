@@ -79,7 +79,12 @@ void Buffer::alloc(int len)
 }
 
 void Buffer::addBegin(int len)
-{	
+{
+	if ( len >= size() ) {
+		begin_ += size();
+		return;
+	}
+
 	begin_ += len;
 }
 

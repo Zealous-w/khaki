@@ -2,6 +2,8 @@
 #define KHAKI_BUFFER_H
 
 #include <string>
+#include <string.h>
+#include <assert.h>
 
 namespace khaki{
 
@@ -21,6 +23,43 @@ namespace khaki{
 		void append(char* buf, int len);
 		void alloc(int len);
 		void addBegin(int len);
+		
+		int32_t readInt8()
+		{
+			assert(size() >= sizeof(int8_t));
+			int8_t data8 = 0;
+			::memcpy(&data8, begin(), sizeof data8);
+			addBegin(sizeof(int8_t));
+			return data8;
+		}
+
+		int32_t readInt16()
+		{
+			assert(size() >= sizeof(int16_t));
+			int16_t data16 = 0;
+			::memcpy(&data16, begin(), sizeof data16);
+			addBegin(int(sizeof(int16_t)));
+			return data16;
+		}
+
+		int32_t readInt32()
+		{
+			assert(size() >= sizeof(int32_t));
+			int32_t data32 = 0;
+			::memcpy(&data32, begin(), sizeof data32);
+			addBegin(sizeof(int32_t));
+			return data32;
+		}
+
+		int32_t readInt64()
+		{
+			assert(size() >= sizeof(int64_t));
+			int64_t data64 = 0;
+			::memcpy(&data64, begin(), sizeof data64);
+			addBegin(sizeof(int64_t));
+			return data64;
+		}
+
 		std::string show();
 
 	private:
