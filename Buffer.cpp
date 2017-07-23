@@ -10,6 +10,11 @@ Buffer::Buffer() : buf_(NULL), begin_(0), end_(0), cap_(0), size_(0) {
 
 }
 
+Buffer::Buffer(std::string& str)
+{
+	append(str.c_str(), str.size());
+}
+
 Buffer::Buffer(const Buffer& buf)
 {
 	buf_ = new char[buf.size()];
@@ -57,7 +62,7 @@ void Buffer::move()
 	begin_ = 0;
 }
 
-void Buffer::append(char* buf, int len)
+void Buffer::append(const char* buf, int len)
 {
 	move();
 	if (end_ + len > cap_) alloc(end_ + len);
@@ -67,7 +72,6 @@ void Buffer::append(char* buf, int len)
 
 void Buffer::alloc(int len)
 {
-	//std::cout << len << std::endl;
 	char* bufTemp = new char[2 * len];
 	memset(bufTemp, 0, 2 * len);
 	std::copy(begin(), end(), bufTemp);
@@ -86,6 +90,11 @@ void Buffer::addBegin(int len)
 	}
 
 	begin_ += len;
+
+	if ( begin_ == end_ ) {
+		begin_ = 0;
+		end_ = 0;
+	}
 }
 
 std::string Buffer::show()

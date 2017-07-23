@@ -10,6 +10,7 @@ namespace khaki{
 	class Buffer {
 	public:
 		Buffer();
+		Buffer(std::string& str);
 		Buffer(const Buffer& buf);
 		~Buffer();
 
@@ -20,7 +21,7 @@ namespace khaki{
 		char* end() const;
 		char* data() const;
 		void move();
-		void append(char* buf, int len);
+		void append(const char* buf, int len);
 		void alloc(int len);
 		void addBegin(int len);
 		
@@ -58,6 +59,14 @@ namespace khaki{
 			::memcpy(&data64, begin(), sizeof data64);
 			addBegin(sizeof(int64_t));
 			return data64;
+		}
+
+		std::string readStringByLen(int len) 
+		{
+			assert(size() >= len);
+			std::string buf(begin(), size());
+			addBegin(len);
+			return buf;
 		}
 
 		std::string show();
