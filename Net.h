@@ -51,10 +51,11 @@ namespace khaki {
 		void setWriteCallback(const Callback& cb) { writecb_ = cb; }
 		void setCloseCallback(const Callback& cb) { closecb_ = cb; }
 
-		void send(char* buf, int len);
+		void send(const char* buf, int len);
 		void send(Buffer& buf);
 		void sendInLoop(Buffer& buf);
 		Buffer getBuf() { Buffer tmp(readBuf_); readBuf_.clear(); return tmp; }
+		Buffer& getReadBuf() { return readBuf_; }
 		void registerChannel(int fd);
 		void closeClient(const TcpClientPtr& con);
 		int getFd();

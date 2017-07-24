@@ -25,6 +25,58 @@ namespace khaki{
 		void alloc(int len);
 		void addBegin(int len);
 		
+		bool checkInt8()
+		{
+			if (size() < sizeof(int8_t)) {
+				return false;
+			}
+			int8_t data8 = 0;
+			::memcpy(&data8, begin(), sizeof data8);
+			if (data8 >= size()) {
+				return true;
+			}
+			return false;
+		}
+
+		bool checkInt16()
+		{
+			if (size() < sizeof(int16_t)) {
+				return false;
+			}
+			int16_t data16 = 0;
+			::memcpy(&data16, begin(), sizeof data16);
+			if (data16 >= size()) {
+				return true;
+			}
+			return false;
+		}
+
+		bool checkInt32()
+		{
+			if (size() < sizeof(int32_t)) {
+				return false;
+			}
+			int32_t data32 = 0;
+			::memcpy(&data32, begin(), sizeof data32);
+			if (data32 >= size()) {
+				return true;
+			}
+			return false;
+		}
+
+		bool checkInt64()
+		{
+			if (size() < sizeof(int64_t)) {
+				return false;
+			}
+			int64_t data64 = 0;
+			::memcpy(&data64, begin(), sizeof data64);
+			if (data64 >= size()) {
+				return true;
+			}
+			return false;
+		}
+
 		int32_t readInt8()
 		{
 			assert(size() >= sizeof(int8_t));

@@ -121,9 +121,11 @@ namespace khaki {
 		loop_->getTimeWheelPtr()->addTcpClient(conPtr);
 	}
 
-	void TcpClient::send(char* buff, int len)
+	void TcpClient::send(const char* buff, int len)
 	{
-		write(channel_->fd(), buff, len);
+		Buffer buf;
+		buf.append(buff, len);
+		send(buf);
 	}
 
 	void TcpClient::send(Buffer& buf)
