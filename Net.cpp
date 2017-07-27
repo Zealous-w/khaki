@@ -362,7 +362,7 @@ namespace khaki {
 				return false;
 			}
 			
-			channel_ = new Channel(loop_, sockFd, kReadEv);
+			channel_ = new Channel(loop_, sockFd, kReadEv|kWriteEv);
 			channel_->OnRead([this]{ handleRead(); });
 			channel_->OnWrite([this]{ handleWrite(); });
 			sockFd_ = sockFd;
@@ -376,7 +376,16 @@ namespace khaki {
 			return connectServer();
 		}
 
-		void Connector::send(char* buf, int len)
+		void Connector::closeConnect()
+		{
+			if (readcb_ && readBuf_.size()) {
+        		readcb_(readBuf_);
+    		}
+
+			delete channel_;
+		}
+
+		void Connector::send(const char* buf, int len)
 		{
 			writeBuf_.append(buf, len);
 			send(writeBuf_);
@@ -431,13 +440,30 @@ namespace khaki {
 			buffer.addBegin(sendSize);
 		}
 
+		bool Connector::checkConnectStatus() 
+		{
+			struct pollfd fd;
+			int ret = 0;
+			socklen_t len = 0;
+
+			fd.fd = sockFd_;
+			fd.events = POLLOUT;
+			if (poll(&fd, 1, 0) == 1 && fd.revents == POLLOUT) {
+				status_ = E_CONNECT_STATUS_RUNNING;
+				channel_->enableWrite(false);
+				log4cppDebug(logger, "connect success");
+				return true;
+			} else {
+				log4cppDebug(logger, "connect failed");
+			}
+			return false;
+		}
+
 		void Connector::handleRead()
 		{
-			if ( status_ == E_CONNECT_STATUS_CONN ) {
-				status_ = E_CONNECT_STATUS_RUNNING;
+			if ( status_ != E_CONNECT_STATUS_RUNNING ) {
 				return;
 			}
-
 			char buf[MAX_READ_BUFFER_SIZE] = {0};
 			int n = 0;
 			while ( true )
@@ -460,6 +486,10 @@ namespace khaki {
 
 		void Connector::handleWrite()
 		{
+			if ( status_ == E_CONNECT_STATUS_CONN ) {
+				checkConnectStatus();
+				return;
+			}
 			directWrite(writeBuf_);
 		}
 }
