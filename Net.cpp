@@ -346,7 +346,7 @@ namespace khaki {
 			if ( status_ == E_CONNECT_STATUS_RUNNING ) {
 				closeFd(sockFd_);
 			}
-			status_ = E_CONNECT_STATUS_CONN;
+			
 			int sockFd = socket(AF_INET, SOCK_STREAM, 0);
 			if ( sockFd < 0 ) {
 				log4cppDebug(logger, "socket error, sockFd : %d", sockFd);
@@ -355,17 +355,9 @@ namespace khaki {
 
 			util::setNonBlock(sockFd);
 
-			int ret = bind(sockFd, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
-			if (ret == -1)
-			{
-				log4cppDebug(logger, "Connector Bind Error, please wait a minutes");
-				closeFd(sockFd);
-				return false;
-			}
-
 			int cRet = connect(sockFd, (struct sockaddr*)&addr_.getAddr(), sizeof(struct sockaddr));
-			if ( cRet < 0 ) {
-				log4cppDebug(logger, "Connector connect Error, %d", cRet);
+			if ( cRet < 0 && errno != EINPROGRESS ) {
+				log4cppDebug(logger, "Connector connect Error, %d, errno : %d", cRet,  errno);
 				closeFd(sockFd);
 				return false;
 			}
@@ -374,7 +366,9 @@ namespace khaki {
 			channel_->OnRead([this]{ handleRead(); });
 			channel_->OnWrite([this]{ handleWrite(); });
 			sockFd_ = sockFd;
-			status_ = E_CONNECT_STATUS_RUNNING;
+			status_ = E_CONNECT_STATUS_CONN;
+
+			return true;
 		}
 
 		bool Connector::retryConnect()
@@ -439,6 +433,11 @@ namespace khaki {
 
 		void Connector::handleRead()
 		{
+			if ( status_ == E_CONNECT_STATUS_CONN ) {
+				status_ = E_CONNECT_STATUS_RUNNING;
+				return;
+			}
+
 			char buf[MAX_READ_BUFFER_SIZE] = {0};
 			int n = 0;
 			while ( true )
