@@ -32,6 +32,7 @@ namespace khaki{
         bool isInLoopThread() { return id_ == std::this_thread::get_id(); }
         void executeInLoop(const EventCallback& cb);
         void handlerWakeUpRead();
+        TimerManager* getTimer() { return &timerM_; }
     private:
         bool byRunning_;
         std::mutex mtx_;
@@ -42,6 +43,7 @@ namespace khaki{
         std::thread::id id_;
         std::shared_ptr<TimeWheel> time_wheel;
         std::vector<EventCallback> vCallback_;
+        TimerManager timerM_;
     };
 }
 

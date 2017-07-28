@@ -56,6 +56,13 @@ int util::getTime()
     return tm.tv_sec;
 }
 
+int util::getTimeMs()
+{
+    struct timeval tm;
+    gettimeofday(&tm, NULL);
+    return tm.tv_sec * 1000 + tm.tv_usec / 1000;
+}
+
 int util::setNonBlock(int fd, bool value) {
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags < 0) {

@@ -17,6 +17,9 @@ namespace khaki {
             timeout_(timeout), cb_(cb), iv_(iv) {
         }
         ~Timer(){}
+        unsigned int GetIv() { return iv_; }
+        void AddTimeOut() { timeout_ += iv_; }
+        unsigned long long GetTimeoutTime() { return timeout_; }
         void TimeOut() { cb_(); }
     private:
         unsigned int timeId;
@@ -27,13 +30,16 @@ namespace khaki {
 
 	class TimerManager {
 	public:
-		TimerManager(int size);
+		TimerManager();
 		~TimerManager();
-
-        void AddTimer(const TimerCallback& cb, unsigned long long timeout, unsigned int iv);
+        
+        void AddTimer(const TimerCallback& cb, unsigned long long timeout/*second*/, unsigned int iv/*second*/);
         void RemoveTimer(unsigned int timerId);
+
+        void Run(unsigned long long timeout);
 	private:
-        std::map<unsigned long long/*timeout*/, unsigned int/*timerId*/> timerLists;
+        unsigned long long ddwTimerId;
+        std::multimap<unsigned long long/*timeout*/, unsigned int/*timerId*/> timerLists;
         std::map<unsigned int/*timerId*/, Timer> timerIdLists;
 	};
 }

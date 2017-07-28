@@ -24,6 +24,7 @@ public:
 	static std::string string_format( const std::string fmt_str, ... );
 
 	static int getTime();
+    static int getTimeMs();
 
     static int setNonBlock(int fd, bool value=true);
     

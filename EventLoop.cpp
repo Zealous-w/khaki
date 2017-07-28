@@ -71,6 +71,7 @@ namespace khaki{
 		while(byRunning_)
 		{
 			poll_->poll();
+			timerM_.Run(util::getTime());
 		}
 	}
 }
