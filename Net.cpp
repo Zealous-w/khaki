@@ -362,9 +362,10 @@ namespace khaki {
 				return false;
 			}
 			
+			TcpConnectorPtr con = shared_from_this();
 			channel_ = new Channel(loop_, sockFd, kReadEv|kWriteEv);
-			channel_->OnRead([this]{ handleRead(); });
-			channel_->OnWrite([this]{ handleWrite(); });
+			channel_->OnRead([=]{ handleRead(con); });
+			channel_->OnWrite([=]{ handleWrite(con); });
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
@@ -379,7 +380,7 @@ namespace khaki {
 		void Connector::closeConnect()
 		{
 			if (readcb_ && readBuf_.size()) {
-        		readcb_(readBuf_);
+        		readcb_(shared_from_this());
     		}
 
 			delete channel_;
@@ -440,7 +441,7 @@ namespace khaki {
 			buffer.addBegin(sendSize);
 		}
 
-		bool Connector::checkConnectStatus() 
+		bool Connector::checkConnectStatus(const TcpConnectorPtr& con) 
 		{
 			struct pollfd fd;
 			int ret = 0;
@@ -451,6 +452,7 @@ namespace khaki {
 			if (poll(&fd, 1, 0) == 1 && fd.revents == POLLOUT) {
 				status_ = E_CONNECT_STATUS_RUNNING;
 				channel_->enableWrite(false);
+				if (newcb_) newcb_(con);
 				log4cppDebug(logger, "connect success");
 				return true;
 			} else {
@@ -459,7 +461,7 @@ namespace khaki {
 			return false;
 		}
 
-		void Connector::handleRead()
+		void Connector::handleRead(const TcpConnectorPtr& con)
 		{
 			if ( status_ != E_CONNECT_STATUS_RUNNING ) {
 				return;
@@ -473,7 +475,7 @@ namespace khaki {
 				{
 				} else if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) )
 				{
-					if ( readcb_ ) readcb_(readBuf_); break;
+					if ( readcb_ ) readcb_(con); break;
 				} else if ( channel_->fd() == -1 || n == 0 || n == -1 )	
 				{
 					closeFd(sockFd_); break;
@@ -484,10 +486,10 @@ namespace khaki {
 			}
 		}
 
-		void Connector::handleWrite()
+		void Connector::handleWrite(const TcpConnectorPtr& con)
 		{
 			if ( status_ == E_CONNECT_STATUS_CONN ) {
-				checkConnectStatus();
+				checkConnectStatus(con);
 				return;
 			}
 			directWrite(writeBuf_);

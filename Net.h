@@ -15,13 +15,16 @@ namespace khaki {
 	class TcpClient;
 	class TimeWheel;
 	class Channel;
+	class Connector;
 
 	const unsigned int MAX_READ_BUFFER_SIZE = 20480;
 	typedef std::weak_ptr<TcpClient> TcpWeakPtr;
 	typedef std::shared_ptr<TcpClient> TcpClientPtr;
+	typedef std::shared_ptr<Connector> TcpConnectorPtr;
 	typedef std::function<void(const TcpClientPtr& con)> Callback;
 	typedef std::shared_ptr<TimeWheel> TimeWheelPtr;
 	typedef std::function<void(Buffer& buf)> CallbackBuffer;
+	typedef std::function<void(const TcpConnectorPtr& con)> CallbackConnector;
 
 	class IpAddr {
 	public:
@@ -120,20 +123,21 @@ namespace khaki {
 		~Connector();
 		bool connectServer();
 		bool retryConnect();
-		void setConnectCallback(const CallbackBuffer& cb) { newcb_ = cb; }
-		void setReadCallback(const CallbackBuffer& cb) { readcb_ = cb; }
-		void setWriteCallback(const CallbackBuffer& cb) { writecb_ = cb; }
-		void setCloseCallback(const CallbackBuffer& cb) { closecb_ = cb; }
+		void setConnectCallback(const CallbackConnector& cb) { newcb_ = cb; }
+		void setReadCallback(const CallbackConnector& cb) { readcb_ = cb; }
+		void setWriteCallback(const CallbackConnector& cb) { writecb_ = cb; }
+		void setCloseCallback(const CallbackConnector& cb) { closecb_ = cb; }
 		void send(const char* buf, int len);
 
 		void closeFd(int fd) { close(sockFd_); status_ = E_CONNECT_STATUS_CLOSE;}
 		void closeConnect();
 		int getFd() { return sockFd_; }
 		int getStatus() { return status_; }
+		Buffer& getReadBuf() { return readBuf_; }
 	private:
-		void handleRead();
-		void handleWrite();
-		bool checkConnectStatus();
+		void handleRead(const TcpConnectorPtr& con);
+		void handleWrite(const TcpConnectorPtr& con);
+		bool checkConnectStatus(const TcpConnectorPtr& con);
 
 		size_t directWrite(Buffer& buffer);
 		void send(Buffer& buf);
@@ -145,7 +149,7 @@ namespace khaki {
 		int status_;
 		Channel* channel_;
 		Buffer readBuf_, writeBuf_;
-		CallbackBuffer newcb_, readcb_, writecb_, closecb_; 
+		CallbackConnector newcb_, readcb_, writecb_, closecb_; 
 	};
 
 	////////////////////////////////////
