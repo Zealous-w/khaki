@@ -2,8 +2,10 @@
 #define KHAKI_NET_H
 
 #include "Buffer.h"
+#include "Util.h"
 #include "Log.h"
 
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <memory>

@@ -136,7 +136,7 @@ namespace khaki {
 		}
 		else
 		{
-			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, this, buf));
+			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, this, Buffer(buf)));
 		}
 	}
 
@@ -443,13 +443,9 @@ namespace khaki {
 
 		bool Connector::checkConnectStatus(const TcpConnectorPtr& con) 
 		{
-			struct pollfd fd;
-			int ret = 0;
-			socklen_t len = 0;
-
-			fd.fd = sockFd_;
-			fd.events = POLLOUT;
-			if (poll(&fd, 1, 0) == 1 && fd.revents == POLLOUT) {
+			int err = 0;
+			socklen_t errlen = sizeof(err);
+			if (getsockopt(sockFd_, SOL_SOCKET, SO_ERROR, &err, &errlen) == 0) {
 				status_ = E_CONNECT_STATUS_RUNNING;
 				channel_->enableWrite(false);
 				if (newcb_) newcb_(con);
@@ -457,7 +453,9 @@ namespace khaki {
 				return true;
 			} else {
 				log4cppDebug(logger, "connect failed");
+				return false;
 			}
+			
 			return false;
 		}
 
