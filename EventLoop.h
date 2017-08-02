@@ -32,6 +32,7 @@ namespace khaki{
         bool isInLoopThread() { return id_ == std::this_thread::get_id(); }
         void executeInLoop(const EventCallback& cb);
         void handlerWakeUpRead();
+        void stop() { byRunning_ = false; uint64_t one = 1; write(wakeupFd_, &one, sizeof one ); }
         TimerManager* getTimer() { return &timerM_; }
     private:
         bool byRunning_;

@@ -1,5 +1,5 @@
 #include "Timer.h"
-
+#include "Log.h"
 namespace khaki {
 TimerManager::TimerManager() {
     ddwTimerId = 0;
@@ -47,6 +47,8 @@ void TimerManager::Run(unsigned long long timeout) {
     for ( auto iter = addMap.begin(); iter != addMap.end(); ++iter ) {
         timerLists.insert(std::make_pair(iter->second.GetTimeoutTime(), iter->first));
     }
+
+    //log4cppDebug(logger, "timerIdLists:%d", timerIdLists.size());
 }
 
 }

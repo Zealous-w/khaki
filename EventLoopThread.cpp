@@ -10,6 +10,7 @@ namespace khaki {
 
     EventLoopThread::~EventLoopThread()
     {
+        loop_->stop();
         if ( thread_.joinable() ) thread_.join();
         if ( loop_ ) delete loop_;
     }

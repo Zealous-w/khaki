@@ -302,7 +302,7 @@ namespace khaki {
 			threadNum_(threadNum)
 		{
 			if (threadNum_ == 0) { threadNum_ = std::thread::hardware_concurrency(); }
-			log4cppDebug(logger, "threadNum : %d", threadNum);
+			
 			for ( int i = 0; i < threadNum; i++ ) {
 				vThreadLoop_.push_back(EventLoopThreadPtr(new EventLoopThread()));
 			}
@@ -316,6 +316,9 @@ namespace khaki {
 
 		TcpThreadServer::~TcpThreadServer()
 		{
+			for (auto iThread : vThreadLoop_) {
+				iThread.reset();
+			}
 		}
 
 		EventLoop* TcpThreadServer::getEventLoop() 
@@ -334,10 +337,6 @@ namespace khaki {
 
 		Connector::~Connector()
 		{
-			if ( status_ == E_CONNECT_STATUS_RUNNING ) {
-				closeFd(sockFd_);
-			}
-
 			if ( channel_ != NULL ) {delete channel_;}
 		}
 
@@ -369,6 +368,7 @@ namespace khaki {
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
+			loop_->getTimer()->AddTimer(std::bind(&Connector::closeConnect, this), khaki::util::getTime() + 5, 0);// 5s timeout
 			return true;
 		}
 
@@ -379,17 +379,23 @@ namespace khaki {
 
 		void Connector::closeConnect()
 		{
+			if (status_ == E_CONNECT_STATUS_RUNNING) return;
+
 			if (readcb_ && readBuf_.size()) {
         		readcb_(shared_from_this());
     		}
 
 			delete channel_;
+			channel_ = NULL;
+			loop_->stop();
+			log4cppDebug(logger, "Connector timeout, %s:%d", addr_.getIp().c_str(), addr_.getPort());
 		}
 
-		void Connector::send(const char* buf, int len)
+		void Connector::send(const char* buff, int len)
 		{
-			writeBuf_.append(buf, len);
-			send(writeBuf_);
+			Buffer buf;
+			buf.append(buff, len);
+			send(buf);
 		}
 
 		void Connector::send(Buffer& buf)
@@ -400,7 +406,7 @@ namespace khaki {
 			}
 			else
 			{
-				loop_->executeInLoop(std::bind(&Connector::sendInLoop, this, buf));
+				loop_->executeInLoop(std::bind(&Connector::sendInLoop, this, Buffer(buf)));
 			}
 		}
 
@@ -448,6 +454,7 @@ namespace khaki {
 			if (getsockopt(sockFd_, SOL_SOCKET, SO_ERROR, &err, &errlen) == 0) {
 				status_ = E_CONNECT_STATUS_RUNNING;
 				channel_->enableWrite(false);
+				channel_->enableRead(true);
 				if (newcb_) newcb_(con);
 				log4cppDebug(logger, "connect success");
 				return true;

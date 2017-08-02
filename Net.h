@@ -129,7 +129,7 @@ namespace khaki {
 		void setReadCallback(const CallbackConnector& cb) { readcb_ = cb; }
 		void setWriteCallback(const CallbackConnector& cb) { writecb_ = cb; }
 		void setCloseCallback(const CallbackConnector& cb) { closecb_ = cb; }
-		void send(const char* buf, int len);
+		void send(const char* buff, int len);
 
 		void closeFd(int fd) { close(sockFd_); status_ = E_CONNECT_STATUS_CLOSE;}
 		void closeConnect();

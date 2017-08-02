@@ -32,7 +32,7 @@ namespace khaki{
 			}
 			int8_t data8 = 0;
 			::memcpy(&data8, begin(), sizeof data8);
-			if (data8 >= size()) {
+			if (data8 <= size()) {
 				return true;
 			}
 			return false;
@@ -45,7 +45,7 @@ namespace khaki{
 			}
 			int16_t data16 = 0;
 			::memcpy(&data16, begin(), sizeof data16);
-			if (data16 >= size()) {
+			if (data16 <= size()) {
 				return true;
 			}
 			return false;
@@ -58,7 +58,7 @@ namespace khaki{
 			}
 			int32_t data32 = 0;
 			::memcpy(&data32, begin(), sizeof data32);
-			if (data32 >= size()) {
+			if (data32 <= size()) {
 				return true;
 			}
 			return false;
@@ -71,7 +71,7 @@ namespace khaki{
 			}
 			int64_t data64 = 0;
 			::memcpy(&data64, begin(), sizeof data64);
-			if (data64 >= size()) {
+			if (data64 <= size()) {
 				return true;
 			}
 			return false;
@@ -116,7 +116,7 @@ namespace khaki{
 		std::string readStringByLen(int len) 
 		{
 			assert(size() >= len);
-			std::string buf(begin(), size());
+			std::string buf(begin(), len);
 			addBegin(len);
 			return buf;
 		}
