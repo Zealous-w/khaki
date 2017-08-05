@@ -1,7 +1,7 @@
 # C++ Network Library
 
 ## Khaki
-仅仅是为了自己学习
+自己学习而用
 参考muduo
 
 ```c
@@ -63,7 +63,7 @@ int main( int argc, char* argv[] )
 {
 	khaki::EventLoop loop;
 	khaki::InitLog(khaki::logger, "./echo.log", log4cpp::Priority::DEBUG);
-	
+
 	EchoServer echo(&loop, "127.0.0.1", 9527, 4);
 	echo.start();
 
