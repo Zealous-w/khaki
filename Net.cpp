@@ -40,7 +40,7 @@ namespace khaki {
 
 	//////////////////////////////////////
 	TcpClient::TcpClient( EventLoop* loop, TcpServer* server ) :
-		loop_(loop), server_(server)
+		loop_(loop), server_(server), uniqueId_(0)
 	{
 	}
 

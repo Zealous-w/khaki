@@ -64,11 +64,14 @@ namespace khaki {
 		void registerChannel(int fd);
 		void closeClient(const TcpClientPtr& con);
 		int getFd();
+		unsigned long long getUniqueId() { return uniqueId_; }
+		void setUniqueId(unsigned long long id) { uniqueId_ = id; }
 		int getLastTime();
 		void updateTimeWheel();
 
 	private:
 		int directWrite(const char* buf, int len);
+		unsigned long long uniqueId_;
 		EventLoop* loop_;
 		TcpServer* server_;
 		std::shared_ptr<Channel> channel_;
