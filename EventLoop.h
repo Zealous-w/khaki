@@ -7,6 +7,7 @@
 #include "PollEpoll.h"
 #include "TimeWheel.h"
 #include "Timer.h"
+#include "Queue.h"
 
 #include <memory>
 
@@ -36,14 +37,13 @@ namespace khaki{
         TimerManager* getTimer() { return &timerM_; }
     private:
         bool byRunning_;
-        std::mutex mtx_;
         PollEpoll* poll_;
         Channel* cTimeWheel_;
         int wakeupFd_;
         Channel* cWeakUp_;
         std::thread::id id_;
         std::shared_ptr<TimeWheel> time_wheel;
-        std::vector<EventCallback> vCallback_;
+        queue<EventCallback> mCallback_;
         TimerManager timerM_;
     };
 }

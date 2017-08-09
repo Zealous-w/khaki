@@ -3,12 +3,12 @@
 #include "EventLoopThread.h"
 #include "Channel.h"
 #include "TimeWheel.h"
+#include "Util.h"
 
 namespace khaki {
 
-	IpAddr::IpAddr(struct sockaddr_in& addr)
+	IpAddr::IpAddr(const struct sockaddr_in& addr):addr_(addr)
 	{
-		addr_ = addr;
 	}
 
 	IpAddr::IpAddr(std::string& host, int port)
@@ -23,9 +23,12 @@ namespace khaki {
 
 	std::string IpAddr::getIp() const
 	{
-		char buf[32]={0};
-		inet_ntop(AF_INET, &addr_.sin_addr, buf, static_cast<socklen_t>(strlen(buf)));
-		return std::string(buf);
+		uint32_t uip = addr_.sin_addr.s_addr;
+		return util::string_format("%d.%d.%d.%d",
+			(uip >> 0)&0xff,
+			(uip >> 8)&0xff,
+			(uip >> 16)&0xff,
+			(uip >> 24)&0xff);
 	}
 
 	int IpAddr::getPort() const
@@ -38,9 +41,16 @@ namespace khaki {
 		return addr_; 
 	}
 
+	uint64_t IpAddr::toIpPort() const
+	{
+		uint32_t port = ntohs(addr_.sin_port);
+		uint32_t ip = addr_.sin_addr.s_addr;
+		return uint64_t(ip) << 32 | ((uint64_t(port) << 16) & 0xFF00);
+	}
+
 	//////////////////////////////////////
-	TcpClient::TcpClient( EventLoop* loop, TcpServer* server ) :
-		loop_(loop), server_(server), uniqueId_(0)
+	TcpClient::TcpClient( EventLoop* loop, TcpServer* server, IpAddr& addr, uint32_t uniqueId ) :
+		loop_(loop), server_(server), addr_(addr), uniqueId_(uniqueId)
 	{
 	}
 
@@ -59,11 +69,9 @@ namespace khaki {
 			{
 			} else if ( n < 0 && ( errno == EAGAIN || errno == EWOULDBLOCK ) )
 			{
-				//klog_info("TcpClient::handleRead size : %d, buff : %s", n, buf_.show().c_str());
 				if ( readcb_ ) readcb_(con); break;
 			} else if ( channel_->fd() == -1 || n == 0 || n == -1 )	
 			{
-				//klog_info("read close by reset");
 				closeClient(con); break;
 			} else 
 			{
@@ -72,9 +80,6 @@ namespace khaki {
 				updateTimeWheel();
 			}
 		}
-
-		//klog_info("%s", readBuf_.show().c_str());
-		//log4cppDebug(logger, "%s", readBuf_.show().c_str());
 	}
 
 	void TcpClient::handleWrite(const TcpClientPtr& con)
@@ -99,7 +104,6 @@ namespace khaki {
 			} else if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 				break;
 			} else {
-				//log4cppDebug(logger, "write error client closed");
 				break;
 			}
 		}
@@ -182,7 +186,8 @@ namespace khaki {
 	TcpServer::TcpServer( EventLoop* loop, std::string host, int port ):
 		loop_(loop), 
 		listen_(NULL), 
-		addr_(host, port)
+		addr_(host, port),
+		uniqueId_(0)
 	{
 	}
 
@@ -213,7 +218,7 @@ namespace khaki {
 			return;
 		}
 
-		if (listen(fd_, 20) == -1 )
+		if (listen(fd_, SOMAXCONN) == -1 )
 		{
 			log4cppDebug(logger, "TcpServer Listen Error");
 			close(fd_);
@@ -271,8 +276,8 @@ namespace khaki {
 	{
 		EventLoop* loop_c = getEventLoop();
 		//util::setNonBlock(fd);
-
-		TcpClientPtr conPtr(new TcpClient(loop_c, this));
+		uniqueId_++;
+		TcpClientPtr conPtr(new TcpClient(loop_c, this, addr, uniqueId_));
 		{
 			conPtr->setReadCallback(readcb_);
 			conPtr->setCloseCallback(std::bind(&TcpServer::removeClient, this, std::placeholders::_1));
@@ -368,7 +373,7 @@ namespace khaki {
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
-			loop_->getTimer()->AddTimer(std::bind(&Connector::closeConnect, this), khaki::util::getTime() + 5, 0);// 5s timeout
+			loop_->getTimer()->AddTimer(std::bind(&Connector::closeConnect, this), khaki::util::getTime() + 240, 0);// 5s timeout
 			return true;
 		}
 
@@ -387,7 +392,7 @@ namespace khaki {
 
 			delete channel_;
 			channel_ = NULL;
-			loop_->stop();
+			//loop_->stop();
 			log4cppDebug(logger, "Connector timeout, %s:%d", addr_.getIp().c_str(), addr_.getPort());
 		}
 

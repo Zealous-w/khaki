@@ -30,13 +30,14 @@ namespace khaki {
 
 	class IpAddr {
 	public:
-		IpAddr(struct sockaddr_in& addr);
+		IpAddr(const struct sockaddr_in& addr);
 		IpAddr(std::string& host, int port);
 
 		~IpAddr();
 
 		std::string getIp() const;
 		int getPort() const;
+		uint64_t toIpPort() const;
 		struct sockaddr_in& getAddr();
 	private:
 		struct sockaddr_in addr_;
@@ -46,7 +47,7 @@ namespace khaki {
 	class TcpServer;
 	class TcpClient : public std::enable_shared_from_this<TcpClient> {
 	public:
-		TcpClient( EventLoop* loop, TcpServer* server );
+		TcpClient( EventLoop* loop, TcpServer* server, IpAddr& addr, uint32_t uniqueId);
 		~TcpClient();
 
 		void handleRead(const TcpClientPtr& con);
@@ -64,16 +65,17 @@ namespace khaki {
 		void registerChannel(int fd);
 		void closeClient(const TcpClientPtr& con);
 		int getFd();
-		unsigned long long getUniqueId() { return uniqueId_; }
-		void setUniqueId(unsigned long long id) { uniqueId_ = id; }
+		uint32_t getUniqueId() { return uniqueId_; }
+		uint64_t getIpPort() { return addr_.toIpPort(); }
 		int getLastTime();
 		void updateTimeWheel();
 
 	private:
 		int directWrite(const char* buf, int len);
-		unsigned long long uniqueId_;
 		EventLoop* loop_;
 		TcpServer* server_;
+		IpAddr addr_;
+		uint32_t uniqueId_;
 		std::shared_ptr<Channel> channel_;
 		Callback readcb_, writecb_, closecb_;
 
@@ -110,6 +112,7 @@ namespace khaki {
 		EventLoop* loop_;
 		Channel* listen_;
 		IpAddr addr_;
+		uint32_t uniqueId_;
 		Callback readcb_, writecb_, newcb_, closecb_;
 		std::mutex mtx_;
 		std::map<int, std::weak_ptr<TcpClient>> sSessionList; 

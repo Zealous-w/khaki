@@ -9,7 +9,7 @@ namespace khaki{
 	EventLoop::EventLoop() :
 		poll_(new PollEpoll()),
 		id_(std::this_thread::get_id()),
-		time_wheel(new TimeWheel(60)),
+		time_wheel(new TimeWheel(120)),
 		wakeupFd_(::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC))
 	{
 		byRunning_ = true;
@@ -42,8 +42,7 @@ namespace khaki{
 		if (isInLoopThread()) { cb(); }
 		else
 		{
-			std::lock_guard<std::mutex> lgd(mtx_);
-			vCallback_.push_back(cb);
+			mCallback_.push(cb);
 
 			uint64_t one = 1;
 			write(wakeupFd_, &one, sizeof one );
@@ -60,10 +59,12 @@ namespace khaki{
 			log4cppDebug(logger, "read wakeup fd error");
 		}
 
-		std::vector<EventCallback> vTmp;
-		vTmp.swap(vCallback_);
-
-		for (auto v : vTmp){ v(); }
+		std::queue<EventCallback> tmpQueue = mCallback_.popAll();
+        while ( !tmpQueue.empty() ) {
+            EventCallback cb = tmpQueue.front();
+            cb();
+            tmpQueue.pop();
+        }
 	}
 
 	void EventLoop::loop()
