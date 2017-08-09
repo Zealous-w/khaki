@@ -347,9 +347,7 @@ namespace khaki {
 
 		bool Connector::connectServer()
 		{
-			if ( status_ == E_CONNECT_STATUS_RUNNING ) {
-				closeFd(sockFd_);
-			}
+			closeConnect();
 			
 			int sockFd = socket(AF_INET, SOCK_STREAM, 0);
 			if ( sockFd < 0 ) {
@@ -384,8 +382,6 @@ namespace khaki {
 
 		void Connector::closeConnect()
 		{
-			if (status_ == E_CONNECT_STATUS_RUNNING) return;
-
 			if (readcb_ && readBuf_.size()) {
         		readcb_(shared_from_this());
     		}
