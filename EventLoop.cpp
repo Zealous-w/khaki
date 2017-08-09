@@ -58,13 +58,14 @@ namespace khaki{
 		{
 			log4cppDebug(logger, "read wakeup fd error");
 		}
-
-		std::queue<EventCallback> tmpQueue = mCallback_.popAll();
-        while ( !tmpQueue.empty() ) {
-            EventCallback cb = tmpQueue.front();
-            cb();
-            tmpQueue.pop();
-        }
+		if (mCallback_.size() > 0) {
+			std::queue<EventCallback> tmpQueue = mCallback_.popAll();
+			while ( !tmpQueue.empty() ) {
+				EventCallback cb = tmpQueue.front();
+				cb();
+				tmpQueue.pop();
+			}
+		}
 	}
 
 	void EventLoop::loop()

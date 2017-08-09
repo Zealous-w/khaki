@@ -347,8 +347,10 @@ namespace khaki {
 
 		bool Connector::connectServer()
 		{
-			closeConnect();
-			
+			if (status_ == E_CONNECT_STATUS_RUNNING) return false;
+
+			status_ = E_CONNECT_STATUS_CLOSE;
+
 			int sockFd = socket(AF_INET, SOCK_STREAM, 0);
 			if ( sockFd < 0 ) {
 				log4cppDebug(logger, "socket error, sockFd : %d", sockFd);
@@ -371,25 +373,32 @@ namespace khaki {
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
-			loop_->getTimer()->AddTimer(std::bind(&Connector::closeConnect, this), khaki::util::getTime() + 240, 0);// 5s timeout
+			loop_->getTimer()->AddTimer(std::bind(&Connector::timeout, this), khaki::util::getTime() + 60, 0);// 5s timeout
 			return true;
 		}
 
 		bool Connector::retryConnect()
 		{
+			closeConnect();
 			return connectServer();
 		}
 
 		void Connector::closeConnect()
 		{
+			status_ = E_CONNECT_STATUS_CLOSE;
 			if (readcb_ && readBuf_.size()) {
         		readcb_(shared_from_this());
     		}
 
 			delete channel_;
 			channel_ = NULL;
-			//loop_->stop();
-			log4cppDebug(logger, "Connector timeout, %s:%d", addr_.getIp().c_str(), addr_.getPort());
+		}
+
+		void Connector::timeout() {
+			if (status_ == E_CONNECT_STATUS_RUNNING) return;
+			closeConnect();
+			loop_->stop();
+			log4cppDebug(logger, "Connector::timeout");
 		}
 
 		void Connector::send(const char* buff, int len)

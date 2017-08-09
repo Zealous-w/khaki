@@ -139,6 +139,7 @@ namespace khaki {
 
 		void closeFd(int fd) { close(sockFd_); status_ = E_CONNECT_STATUS_CLOSE;}
 		void closeConnect();
+		void timeout();
 		int getFd() { return sockFd_; }
 		int getStatus() { return status_; }
 		Buffer& getReadBuf() { return readBuf_; }
