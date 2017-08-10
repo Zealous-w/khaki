@@ -69,7 +69,7 @@ namespace khaki {
 		uint64_t getIpPort() { return addr_.toIpPort(); }
 		int getLastTime();
 		void updateTimeWheel();
-
+		void enableRead();
 	private:
 		int directWrite(const char* buf, int len);
 		EventLoop* loop_;

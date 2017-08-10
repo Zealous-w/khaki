@@ -14,11 +14,13 @@ namespace khaki{
 	{
 		byRunning_ = true;
 
-		cTimeWheel_ = new Channel(this, time_wheel->getTimeFd(), kReadEv);
+		cTimeWheel_ = new Channel(this, time_wheel->getTimeFd());
 		cTimeWheel_->OnRead([this]{ this->time_wheel->handlerRead(); });
-
-		cWeakUp_ = new Channel(this, wakeupFd_, kReadEv);
+		cTimeWheel_->enableRead(true);
+		
+		cWeakUp_ = new Channel(this, wakeupFd_);
 		cWeakUp_->OnRead(std::bind(&EventLoop::handlerWakeUpRead, this));
+		cWeakUp_->enableRead(true);
 	}
 
 	EventLoop::~EventLoop()
@@ -58,11 +60,15 @@ namespace khaki{
 		{
 			log4cppDebug(logger, "read wakeup fd error");
 		}
+		
 		if (mCallback_.size() > 0) {
 			std::queue<EventCallback> tmpQueue = mCallback_.popAll();
 			while ( !tmpQueue.empty() ) {
 				EventCallback cb = tmpQueue.front();
-				cb();
+				if (cb) cb();
+				else {
+					log4cppDebug(logger, "EventLoop::handlerWakeUpRead ERROR");
+				}
 				tmpQueue.pop();
 			}
 		}

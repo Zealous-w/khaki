@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include "Log.h"
 
 namespace khaki {
 
@@ -20,7 +21,7 @@ namespace khaki {
         unsigned int GetIv() { return iv_; }
         void AddTimeOut() { timeout_ += iv_; }
         unsigned long long GetTimeoutTime() { return timeout_; }
-        void TimeOut() { cb_(); }
+        void TimeOut() { if (cb_) cb_(); else log4cppError(logger, "bad function"); }
     private:
         unsigned int timeId;
         unsigned long long timeout_;

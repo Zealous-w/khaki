@@ -70,7 +70,9 @@ namespace khaki {
 				if ( !wp.second.expired() )
 				{
 					TcpClientPtr con = wp.second.lock();
-					if (con->getLastTime() + size_ - 1 <= now) con->closeClient(con);
+					if (con) {
+						if (con->getLastTime() + size_ - 1 <= now) con->closeClient(con);
+					}
 				} 
 			}
 

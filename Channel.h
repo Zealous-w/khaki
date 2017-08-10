@@ -9,7 +9,7 @@ namespace khaki{
     public:
         typedef std::function<void()> FunctionCallback_;
 
-        Channel(EventLoop* loop, int fd, int event);
+        Channel(EventLoop* loop, int fd);
 
         ~Channel();
         EventLoop* getEventLoop();

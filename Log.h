@@ -14,7 +14,7 @@ inline void InitLog(log4cpp::Category &logger, std::string filename, int level) 
 	layoutFile->setConversionPattern("%d: %p %c %x: %m%n");          
 	log4cpp::PatternLayout* layoutCout = new log4cpp::PatternLayout(); 
 	layoutCout->setConversionPattern("%d: %p %c %x: %m%n");         
-	log4cpp::RollingFileAppender* rollfileAppender = new log4cpp::RollingFileAppender("rollfileAppender", filename, 100*1024*1024, 100);
+	log4cpp::RollingFileAppender* rollfileAppender = new log4cpp::RollingFileAppender("rollfileAppender", filename, 10*1024*1024, 100);
 	rollfileAppender->setLayout(layoutFile);
 	log4cpp::OstreamAppender* osAppender = new log4cpp::OstreamAppender("osAppender", &std::cout);
 	osAppender->setLayout(layoutCout);

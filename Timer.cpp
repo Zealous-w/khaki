@@ -1,5 +1,5 @@
 #include "Timer.h"
-#include "Log.h"
+
 namespace khaki {
 TimerManager::TimerManager() {
     ddwTimerId = 0;

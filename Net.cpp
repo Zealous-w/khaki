@@ -160,7 +160,7 @@ namespace khaki {
 
 	void TcpClient::registerChannel( int fd )
 	{
-		channel_ = std::shared_ptr<Channel>(new Channel(loop_, fd, kReadEv));
+		channel_ = std::shared_ptr<Channel>(new Channel(loop_, fd));
 
 		TcpClientPtr conPtr = shared_from_this();
 		conPtr->channel_->OnRead(std::bind(&TcpClient::handleRead, this, conPtr));
@@ -180,6 +180,11 @@ namespace khaki {
 		writecb_ = NULL;
 
 		channel_.reset();
+	}
+
+	void TcpClient::enableRead() 
+	{
+		if (channel_) channel_->enableRead(true);
 	}
 
 	//////////////////////////////////////
@@ -226,9 +231,9 @@ namespace khaki {
 			return;
 		}
 
-		listen_ = new Channel(loop_, fd_, kReadEv);
+		listen_ = new Channel(loop_, fd_);
 		listen_->OnRead([this]{ handleAccept(); });
-
+		listen_->enableRead(true);
 		log4cppDebug(logger, "TcpServer Listen %s:%d", addr_.getIp().c_str(), addr_.getPort());
 	}
 
@@ -282,10 +287,10 @@ namespace khaki {
 			conPtr->setReadCallback(readcb_);
 			conPtr->setCloseCallback(std::bind(&TcpServer::removeClient, this, std::placeholders::_1));
 			conPtr->registerChannel(fd);
+			if (newcb_) newcb_(conPtr);
+			conPtr->enableRead();
 			addClient(conPtr);
 		}
-		
-		if (newcb_) newcb_(conPtr);
 	}
 
 	void TcpServer::handleAccept()
@@ -367,9 +372,10 @@ namespace khaki {
 			}
 			
 			TcpConnectorPtr con = shared_from_this();
-			channel_ = new Channel(loop_, sockFd, kReadEv|kWriteEv);
+			channel_ = new Channel(loop_, sockFd);
 			channel_->OnRead([=]{ handleRead(con); });
 			channel_->OnWrite([=]{ handleWrite(con); });
+			channel_->enableWrite(true);
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 

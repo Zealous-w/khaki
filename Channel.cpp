@@ -2,8 +2,8 @@
 #include "EventLoop.h"
 
 namespace khaki {
-	Channel::Channel(EventLoop* loop, int fd, int event):
-    		loop_(loop), fd_(fd), events_(event | EPOLLET), readcb_(NULL), writecb_(NULL)
+	Channel::Channel(EventLoop* loop, int fd):
+    		loop_(loop), fd_(fd), events_(EPOLLET), readcb_(NULL), writecb_(NULL)
 	{
 	    loop_->getPoll()->addChannel(this);
 	}
