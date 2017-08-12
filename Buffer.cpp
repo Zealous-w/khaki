@@ -39,7 +39,7 @@ bool Buffer::empty() const {
 	return (end_ - begin_ > 0) ? false : true;
 }
 
-int Buffer::size() const {
+uint32_t Buffer::size() const {
 	return end_ - begin_;
 }
 
@@ -51,7 +51,7 @@ char* Buffer::end() const {
 	return buf_ + end_;
 }
 
-char* Buffer::data() const {
+char* Buffer::data() {
 	return buf_ + begin_;
 }
 
@@ -62,7 +62,7 @@ void Buffer::move()
 	begin_ = 0;
 }
 
-void Buffer::append(const char* buf, int len)
+void Buffer::append(const char* buf, uint32_t len)
 {
 	move();
 	if (end_ + len > cap_) alloc(end_ + len);
@@ -70,7 +70,7 @@ void Buffer::append(const char* buf, int len)
 	end_ += len;
 }
 
-void Buffer::alloc(int len)
+void Buffer::alloc(uint32_t len)
 {
 	char* bufTemp = new char[2 * len];
 	memset(bufTemp, 0, 2 * len);
@@ -82,7 +82,7 @@ void Buffer::alloc(int len)
 	cap_ = 2 * len;
 }
 
-void Buffer::addBegin(int len)
+void Buffer::addBegin(uint32_t len)
 {
 	if ( len >= size() ) {
 		begin_ += size();

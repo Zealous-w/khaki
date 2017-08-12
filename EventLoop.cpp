@@ -10,10 +10,9 @@ namespace khaki{
 		poll_(new PollEpoll()),
 		id_(std::this_thread::get_id()),
 		time_wheel(new TimeWheel(120)),
-		wakeupFd_(::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC))
+		wakeupFd_(::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)),
+		byRunning_(true)
 	{
-		byRunning_ = true;
-
 		cTimeWheel_ = new Channel(this, time_wheel->getTimeFd());
 		cTimeWheel_->OnRead([this]{ this->time_wheel->handlerRead(); });
 		cTimeWheel_->enableRead(true);

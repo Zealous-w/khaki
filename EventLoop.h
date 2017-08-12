@@ -9,6 +9,7 @@
 #include "Timer.h"
 #include "Queue.h"
 
+#include <atomic>
 #include <memory>
 
 namespace khaki{
@@ -36,7 +37,7 @@ namespace khaki{
         void stop() { byRunning_ = false; uint64_t one = 1; write(wakeupFd_, &one, sizeof one ); }
         TimerManager* getTimer() { return &timerM_; }
     private:
-        bool byRunning_;
+        std::atomic<bool> byRunning_;
         PollEpoll* poll_;
         Channel* cTimeWheel_;
         int wakeupFd_;
