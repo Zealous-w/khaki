@@ -342,7 +342,7 @@ namespace khaki {
 		Connector::Connector(EventLoop* loop, std::string host, uint16_t port):
 			loop_(loop), addr_(host, int(port)), channel_(NULL)
 		{
-			status_ == E_CONNECT_STATUS_CLOSE;
+			status_ = E_CONNECT_STATUS_CLOSE;
 		}
 
 		Connector::~Connector()
@@ -379,7 +379,7 @@ namespace khaki {
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
-			loop_->getTimer()->AddTimer(std::bind(&Connector::timeout, this), khaki::util::getTime() + 60, 0);// 5s timeout
+			loop_->getTimer()->AddTimer(std::bind(&Connector::timeout, this), khaki::util::getTime() + 5, 0);// 5s timeout
 			return true;
 		}
 

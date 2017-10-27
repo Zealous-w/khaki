@@ -63,7 +63,7 @@ namespace khaki {
 			uint64_t exp; 
 			read(timefd_, &exp, sizeof(uint64_t) );
 
-			showTimeWheel();
+			//showTimeWheel();
 			int now = util::getTime();
 			for ( auto wp : vWheel_[index_] )
 			{	

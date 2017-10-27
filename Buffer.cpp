@@ -12,7 +12,7 @@ Buffer::Buffer() : buf_(NULL), begin_(0), end_(0), cap_(0), size_(0) {
 
 Buffer::Buffer(std::string& str)
 {
-	append(str.c_str(), str.size());
+	append(str.data(), str.size());
 }
 
 Buffer::Buffer(const Buffer& buf)
