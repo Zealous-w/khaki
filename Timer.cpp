@@ -9,7 +9,7 @@ TimerManager::~TimerManager() {
 
 }
 
-void TimerManager::AddTimer(const TimerCallback& cb, unsigned long long timeout, unsigned int iv) {
+void TimerManager::AddTimer(const TimerCallback& cb, unsigned int timeout, unsigned int iv) {
     Timer timer(cb, timeout, iv);
     ddwTimerId++;
     timerLists.insert(std::make_pair(timeout, ddwTimerId));
@@ -23,7 +23,7 @@ void TimerManager::RemoveTimer(unsigned int timerId) {
     timerIdLists.erase(timerId);
 }
 
-void TimerManager::Run(unsigned long long timeout) {
+void TimerManager::Run(unsigned int timeout) {
     std::map<unsigned int/*timerId*/, Timer> addMap;
     for ( auto iter = timerLists.begin(); 
             iter != timerLists.end(); ) {

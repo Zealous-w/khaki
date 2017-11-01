@@ -14,17 +14,17 @@ namespace khaki {
     typedef std::function<void()> TimerCallback;
     class Timer {
     public:
-        Timer(const TimerCallback& cb, unsigned long long timeout, unsigned int iv) :
+        Timer(const TimerCallback& cb, unsigned int timeout, unsigned int iv) :
             timeout_(timeout), cb_(cb), iv_(iv) {
         }
         ~Timer(){}
         unsigned int GetIv() { return iv_; }
         void AddTimeOut() { timeout_ += iv_; }
-        unsigned long long GetTimeoutTime() { return timeout_; }
+        unsigned int GetTimeoutTime() { return timeout_; }
         void TimeOut() { if (cb_) cb_(); else log4cppError(logger, "bad function"); }
     private:
         unsigned int timeId;
-        unsigned long long timeout_;
+        unsigned int timeout_;
         unsigned int iv_;
         TimerCallback cb_;
     };
@@ -34,13 +34,13 @@ namespace khaki {
 		TimerManager();
 		~TimerManager();
         
-        void AddTimer(const TimerCallback& cb, unsigned long long timeout/*second*/, unsigned int iv/*second*/);
+        void AddTimer(const TimerCallback& cb, unsigned int timeout/*second*/, unsigned int iv/*second*/);
         void RemoveTimer(unsigned int timerId);
 
-        void Run(unsigned long long timeout);
+        void Run(unsigned int timeout);
 	private:
         unsigned long long ddwTimerId;
-        std::multimap<unsigned long long/*timeout*/, unsigned int/*timerId*/> timerLists;
+        std::multimap<unsigned int/*timeout*/, unsigned int/*timerId*/> timerLists;
         std::map<unsigned int/*timerId*/, Timer> timerIdLists;
 	};
 }
