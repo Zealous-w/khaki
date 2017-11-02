@@ -57,7 +57,7 @@ public:
     }
     ~TimerEntry() {}
     bool operator<(const TimerEntry& timer) {
-        return timer_cmp(&(this->tm_), &(timer.tm_), >);
+        return timer_cmp(&(this->tm_), &(timer.tm_), <);
     }
 
     void timeout() { 
@@ -75,7 +75,6 @@ public:
 
 class TimerQueue : public MinHeap<TimerEntry> {
 public:
-    typedef std::priority_queue<TimerEntry> QueueType;
     typedef std::function<void()> TimerCallBack;
     TimerQueue() :autoTimerId_(0) {}
     ~TimerQueue(){}
