@@ -86,6 +86,10 @@ namespace khaki {
 	{
 		int size = directWrite(writeBuf_.begin(), writeBuf_.size());
 		writeBuf_.addBegin(size);
+		if (writeBuf_.empty()) {
+			if (writecb_) writecb_(con);
+			if (channel_->writeStatus()) channel_->enableWrite(false);
+		}
 	}
 
 	int TcpClient::directWrite(const char* buf, int len)
@@ -514,5 +518,9 @@ namespace khaki {
 				return;
 			}
 			directWrite(writeBuf_);
+			if (writeBuf_.empty()) {
+				if (writecb_) writecb_(con);
+				if (channel_->writeStatus()) channel_->enableWrite(false);
+			}
 		}
 }
