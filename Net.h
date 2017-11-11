@@ -127,7 +127,7 @@ namespace khaki {
 			E_CONNECT_STATUS_RUNNING = 2,
 		};
 
-		Connector(EventLoop* loop, std::string host, uint16_t port);
+		Connector(EventLoop* loop, std::string host, uint16_t port, int timeout_);
 		~Connector();
 		bool connectServer();
 		bool retryConnect();
@@ -154,6 +154,7 @@ namespace khaki {
 	private:
 		EventLoop* loop_;
 		IpAddr addr_;
+		int timeout_;
 		int sockFd_;
 		int status_;
 		Channel* channel_;
