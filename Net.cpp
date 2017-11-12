@@ -461,6 +461,8 @@ namespace khaki {
 				} else if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 					break;
 				} else {
+					//close
+					status_ = E_CONNECT_STATUS_CLOSE;
 					break;
 				}
 			}
