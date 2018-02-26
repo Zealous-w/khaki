@@ -34,7 +34,7 @@ namespace khaki{
     	PollEpoll();
     	~PollEpoll();
 
-    	void poll();
+    	void poll(int timeout=500);
 
     	void addChannel( Channel* ch ) ;
     	void updateChannel( Channel* ch ) ;

@@ -39,9 +39,9 @@ namespace khaki {
 		sChannel_.erase(ch);
 	}
 
-	void PollEpoll::poll()
+	void PollEpoll::poll(int timeout)
 	{
-		int live = epoll_wait(evId_, activeEv_, kMaxEvents, 10000);
+		int live = epoll_wait(evId_, activeEv_, kMaxEvents, timeout);
 
 		for ( int i = 0; i < live; i++ )
 		{
