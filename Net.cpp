@@ -150,6 +150,10 @@ namespace khaki {
 
 	void TcpClient::sendInLoop(Buffer& buf)
 	{
+		if (!channel_) {
+			log4cppError(khaki::logger, "channel_ ERROR");
+			return;
+		}
 		if ( buf.size() )
 		{
 			int size = directWrite(buf.begin(), buf.size());

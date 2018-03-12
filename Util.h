@@ -29,6 +29,7 @@ public:
     static int setNonBlock(int fd, bool value=true);
     
     static int setReuseAddr(int fd, bool value=true);
+    static void setTcpNodelay(int fd);
 };
 }
 

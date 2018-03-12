@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include<sys/socket.h>
+#include <linux/tcp.h>
+#include <netinet/in.h>
 
 namespace khaki
 {
@@ -80,5 +82,9 @@ int util::setReuseAddr(int fd, bool value) {
     return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, len);
 }
 
+void util::setTcpNodelay(int fd) {  
+    int enable = 1;  
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));  
+}
 
 }
