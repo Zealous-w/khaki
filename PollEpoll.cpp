@@ -1,9 +1,10 @@
 #include "PollEpoll.h"
 #include "Channel.h"
+#include "Log.h"
 
 namespace khaki {
 
-	PollEpoll::PollEpoll()
+	PollEpoll::PollEpoll():activeEv_(kMaxEvents)
 	{
 		evId_ = epoll_create1(EPOLL_CLOEXEC);
 	}
@@ -41,21 +42,38 @@ namespace khaki {
 
 	void PollEpoll::poll(int timeout)
 	{
-		int live = epoll_wait(evId_, activeEv_, kMaxEvents, timeout);
-
-		for ( int i = 0; i < live; i++ )
+		int eventsRet = ::epoll_wait(evId_, &*activeEv_.begin(), static_cast<int>(activeEv_.size()), timeout);
+		
+		if (eventsRet > 0) 
 		{
-			int events = activeEv_[i].events;
-			Channel* ch = (Channel*)activeEv_[i].data.ptr;
-			if (ch)
+			for ( int i = 0; i < eventsRet; i++ )
 			{
-				if ( events & (POLLERR | kReadEv) )
+				int events = activeEv_[i].events;
+				Channel* ch = (Channel*)activeEv_[i].data.ptr;
+				if (ch)
 				{
-					ch->handleRead();
-				}else if ( events & kWriteEv )
-				{
-					ch->handleWrite();
+					if ( events & (POLLERR | kReadEv) )
+					{
+						ch->handleRead();
+					}else if ( events & kWriteEv )
+					{
+						ch->handleWrite();
+					}
 				}
+			}
+			if (size_t(eventsRet) == activeEv_.size())
+			{
+				activeEv_.resize(activeEv_.size() * 2);
+			}
+		} else if (eventsRet < 0) {
+			if (errno == EBADF) {
+				log4cppError(khaki::logger, "epfd is not a valid file descriptor.");
+			} else if (errno == EFAULT) {
+				log4cppError(khaki::logger, "The memory area pointed to by events is not accessible with write permissions.");
+			} else if (errno == EINTR) {
+				log4cppError(khaki::logger, "epfd timeout expired.");
+			} else if (errno == EINVAL) {
+				log4cppError(khaki::logger, "maxevents is less than or equal to zero.");
 			}
 		}
 	}

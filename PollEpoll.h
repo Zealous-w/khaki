@@ -42,7 +42,7 @@ namespace khaki{
     private:
     	int evId_;
     	ChannelSet sChannel_;
-    	struct epoll_event activeEv_[kMaxEvents];
+    	std::vector<struct epoll_event> activeEv_;
     };
 }
 
