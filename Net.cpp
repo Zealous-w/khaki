@@ -144,7 +144,7 @@ namespace khaki {
 		}
 		else
 		{
-			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, this, Buffer(buf)));
+			loop_->executeInLoop(std::bind(&TcpClient::sendInLoop, shared_from_this(), Buffer(buf)));
 		}
 	}
 
@@ -171,8 +171,14 @@ namespace khaki {
 		channel_ = std::shared_ptr<Channel>(new Channel(loop_, fd));
 
 		TcpClientPtr conPtr = shared_from_this();
-		conPtr->channel_->OnRead(std::bind(&TcpClient::handleRead, this, conPtr));
-		conPtr->channel_->OnWrite(std::bind(&TcpClient::handleWrite, this, conPtr));
+
+		conPtr->channel_->OnRead([=](){
+			conPtr->handleRead(conPtr);
+		});
+
+		conPtr->channel_->OnWrite([=](){
+			conPtr->handleWrite(conPtr);
+		});
 
 		updateTimeWheel();
 	}
@@ -245,11 +251,6 @@ namespace khaki {
 		log4cppDebug(logger, "TcpServer Listen %s:%d", addr_.getIp().c_str(), addr_.getPort());
 	}
 
-	void TcpServer::send(char* buf)
-	{
-
-	}
-
 	int TcpServer::getOnlineNum()
 	{
 		int count = 0;
@@ -288,7 +289,6 @@ namespace khaki {
 	void TcpServer::newConnect( int fd, IpAddr& addr )
 	{
 		EventLoop* loop_c = getEventLoop();
-		//util::setNonBlock(fd);
 		uniqueId_++;
 		TcpClientPtr conPtr(new TcpClient(loop_c, this, addr, uniqueId_));
 		{
@@ -387,7 +387,7 @@ namespace khaki {
 			sockFd_ = sockFd;
 			status_ = E_CONNECT_STATUS_CONN;
 
-			loop_->getTimer()->AddTimer(std::bind(&Connector::timeout, this), khaki::util::getTime() + this->timeout_, 0);//timeout
+			loop_->getTimer()->AddTimer(std::bind(&Connector::timeout, con), khaki::util::getTime() + this->timeout_, 0);//timeout
 			return true;
 		}
 

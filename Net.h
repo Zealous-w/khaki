@@ -99,8 +99,6 @@ namespace khaki {
 		void setConnectionCallback(const Callback& cb) { newcb_ = cb; }
 		void setConnCloseCallback(const Callback& cb) { closecb_ = cb; }
 
-		void send(char* buf);
-
 		int getOnlineNum();
 		void addClient(TcpClientPtr& sp);
 		void removeClient(const TcpClientPtr& sp);
